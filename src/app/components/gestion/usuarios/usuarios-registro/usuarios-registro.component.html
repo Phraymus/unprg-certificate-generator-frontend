@@ -24,49 +24,38 @@
       </div>
 
       <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-12">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Usuario</mat-label>
-            <input matInput formControlName="usuario" placeholder="Ingrese nombre de usuario">
-            <mat-error *ngIf="f['usuario'].touched && f['usuario'].errors">
+            <input matInput formControlName="usuario" placeholder="Ingrese nombre de usuario"
+                   [readonly]="isReadOnlyMode">
+            <mat-error *ngIf="f['usuario'].touched && f['usuario'].errors && !isReadOnlyMode">
               {{ getErrorMessage('usuario') }}
-            </mat-error>
-          </mat-form-field>
-        </div>
-
-        <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Rol</mat-label>
-            <mat-select formControlName="rol">
-              <mat-option value="admin">Administrador</mat-option>
-              <mat-option value="user">Usuario</mat-option>
-              <mat-option value="moderator">Moderador</mat-option>
-            </mat-select>
-            <mat-error *ngIf="f['rol'].touched && f['rol'].errors">
-              {{ getErrorMessage('rol') }}
             </mat-error>
           </mat-form-field>
         </div>
       </div>
 
-      <div class="row" *ngIf="!isEditMode || (isEditMode && f['password'].value)">
+      <div class="row" *ngIf="(!isEditMode && !isReadOnlyMode) || (isEditMode && f['clave'].value && !isReadOnlyMode)">
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>{{ isEditMode ? 'Nueva Contraseña (opcional)' : 'Contraseña' }}</mat-label>
-            <input matInput type="password" formControlName="password"
-                   [placeholder]="isEditMode ? 'Dejar vacío para mantener actual' : 'Ingrese contraseña'">
-            <mat-error *ngIf="f['password'].touched && f['password'].errors">
-              {{ getErrorMessage('password') }}
+            <input matInput type="password" formControlName="clave"
+                   [placeholder]="isEditMode ? 'Dejar vacío para mantener actual' : 'Ingrese contraseña'"
+                   [readonly]="isReadOnlyMode">
+            <mat-error *ngIf="f['clave'].touched && f['clave'].errors && !isReadOnlyMode">
+              {{ getErrorMessage('clave') }}
             </mat-error>
           </mat-form-field>
         </div>
 
-        <div class="col-md-6" *ngIf="f['password'].value">
+        <div class="col-md-6" *ngIf="f['clave'].value && !isReadOnlyMode">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Confirmar Contraseña</mat-label>
             <input matInput type="password" formControlName="confirmPassword"
-                   placeholder="Confirme la contraseña">
-            <mat-error *ngIf="f['confirmPassword'].touched && f['confirmPassword'].errors">
+                   placeholder="Confirme la contraseña"
+                   [readonly]="isReadOnlyMode">
+            <mat-error *ngIf="f['confirmPassword'].touched && f['confirmPassword'].errors && !isReadOnlyMode">
               {{ getErrorMessage('confirmPassword') }}
             </mat-error>
           </mat-form-field>
@@ -85,8 +74,9 @@
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Nombres</mat-label>
-            <input matInput formControlName="nombres" placeholder="Ingrese nombres">
-            <mat-error *ngIf="f['nombres'].touched && f['nombres'].errors">
+            <input matInput formControlName="nombres" placeholder="Ingrese nombres"
+                   [readonly]="isReadOnlyMode">
+            <mat-error *ngIf="f['nombres'].touched && f['nombres'].errors && !isReadOnlyMode">
               {{ getErrorMessage('nombres') }}
             </mat-error>
           </mat-form-field>
@@ -95,8 +85,9 @@
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Apellido Paterno</mat-label>
-            <input matInput formControlName="apellidoPaterno" placeholder="Ingrese apellido paterno">
-            <mat-error *ngIf="f['apellidoPaterno'].touched && f['apellidoPaterno'].errors">
+            <input matInput formControlName="apellidoPaterno" placeholder="Ingrese apellido paterno"
+                   [readonly]="isReadOnlyMode">
+            <mat-error *ngIf="f['apellidoPaterno'].touched && f['apellidoPaterno'].errors && !isReadOnlyMode">
               {{ getErrorMessage('apellidoPaterno') }}
             </mat-error>
           </mat-form-field>
@@ -107,15 +98,17 @@
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Apellido Materno</mat-label>
-            <input matInput formControlName="apellidoMaterno" placeholder="Ingrese apellido materno">
+            <input matInput formControlName="apellidoMaterno" placeholder="Ingrese apellido materno"
+                   [readonly]="isReadOnlyMode">
           </mat-form-field>
         </div>
 
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>DNI</mat-label>
-            <input matInput formControlName="dni" placeholder="12345678" maxlength="8">
-            <mat-error *ngIf="f['dni'].touched && f['dni'].errors">
+            <input matInput formControlName="dni" placeholder="12345678" maxlength="8"
+                   [readonly]="isReadOnlyMode">
+            <mat-error *ngIf="f['dni'].touched && f['dni'].errors && !isReadOnlyMode">
               {{ getErrorMessage('dni') }}
             </mat-error>
           </mat-form-field>
@@ -134,8 +127,9 @@
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Email</mat-label>
-            <input matInput type="email" formControlName="email" placeholder="usuario@ejemplo.com">
-            <mat-error *ngIf="f['email'].touched && f['email'].errors">
+            <input matInput type="email" formControlName="email" placeholder="usuario@ejemplo.com"
+                   [readonly]="isReadOnlyMode">
+            <mat-error *ngIf="f['email'].touched && f['email'].errors && !isReadOnlyMode">
               {{ getErrorMessage('email') }}
             </mat-error>
           </mat-form-field>
@@ -144,41 +138,11 @@
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Teléfono</mat-label>
-            <input matInput formControlName="telefono" placeholder="987654321" maxlength="9">
-            <mat-error *ngIf="f['telefono'].touched && f['telefono'].errors">
+            <input matInput formControlName="telefono" placeholder="987654321" maxlength="9"
+                   [readonly]="isReadOnlyMode">
+            <mat-error *ngIf="f['telefono'].touched && f['telefono'].errors && !isReadOnlyMode">
               {{ getErrorMessage('telefono') }}
             </mat-error>
-          </mat-form-field>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Fecha de Nacimiento</mat-label>
-            <input matInput [matDatepicker]="picker" formControlName="fechaNacimiento">
-            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-          </mat-form-field>
-        </div>
-
-        <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Estado</mat-label>
-            <mat-select formControlName="estado">
-              <mat-option [value]="true">Activo</mat-option>
-              <mat-option [value]="false">Inactivo</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-12">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Dirección</mat-label>
-            <textarea matInput formControlName="direccion" placeholder="Ingrese dirección completa"
-                      rows="3"></textarea>
           </mat-form-field>
         </div>
       </div>
@@ -190,13 +154,14 @@
     <div class="d-flex justify-content-end gap-2">
       <button mat-stroked-button type="button" (click)="onCancel()" [disabled]="isLoading">
         <mat-icon>close</mat-icon>
-        Cancelar
+        {{ isReadOnlyMode ? 'Cerrar' : 'Cancelar' }}
       </button>
 
       <button mat-flat-button color="primary" type="submit"
               (click)="onSubmit()"
-              [disabled]="usuarioForm.invalid || isLoading"
-              class="ms-2">
+              [disabled]="usuarioForm.invalid || isLoading || isReadOnlyMode"
+              class="ms-2"
+              *ngIf="!isReadOnlyMode">
         <mat-icon *ngIf="!isLoading">{{ isEditMode ? 'edit' : 'save' }}</mat-icon>
         <mat-icon *ngIf="isLoading" class="spinning">sync</mat-icon>
         {{ isLoading ? 'Guardando...' : (isEditMode ? 'Actualizar' : 'Guardar') }}

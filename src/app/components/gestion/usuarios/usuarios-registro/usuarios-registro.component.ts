@@ -6,17 +6,15 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
 import { CommonModule } from '@angular/common';
 import { TbUsuario } from "~shared/interfaces";
 import { TbUsuarioService } from "app/services";
 
 interface DialogData {
-  action: 'Registrar' | 'Editar';
+  action: 'Registrar' | 'Editar' | 'Ver';
   title: string;
   usuario: TbUsuario;
+  readOnly?: boolean;
 }
 
 @Component({
@@ -33,10 +31,7 @@ interface DialogData {
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatIconModule,
-    MatSelectModule,
-    MatDatepickerModule,
-    MatNativeDateModule
+    MatIconModule
   ],
   templateUrl: './usuarios-registro.component.html',
   styleUrl: './usuarios-registro.component.scss'
@@ -49,15 +44,22 @@ export class UsuariosRegistroComponent implements OnInit {
   usuarioForm!: FormGroup;
   isLoading = false;
   isEditMode = false;
+  isReadOnlyMode = false;
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: DialogData) {
     this.isEditMode = this.data.action === 'Editar';
+    this.isReadOnlyMode = this.data.action === 'Ver' || this.data.readOnly === true;
   }
 
   ngOnInit() {
     this.initializeForm();
-    if (this.isEditMode && this.data.usuario) {
+    if ((this.isEditMode || this.isReadOnlyMode) && this.data.usuario) {
       this.loadUserData();
+    }
+
+    // Si es modo de solo lectura, deshabilitar todo el formulario
+    if (this.isReadOnlyMode) {
+      this.usuarioForm.disable();
     }
   }
 
@@ -65,7 +67,7 @@ export class UsuariosRegistroComponent implements OnInit {
     this.usuarioForm = this._formBuilder.group({
       // Datos de usuario
       usuario: ['', [Validators.required, Validators.minLength(3)]],
-      password: [
+      clave: [
         '',
         this.isEditMode
           ? [] // En edición, password es opcional
@@ -79,29 +81,23 @@ export class UsuariosRegistroComponent implements OnInit {
       apellidoMaterno: [''],
       dni: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]],
       email: ['', [Validators.required, Validators.email]],
-      telefono: ['', [Validators.pattern(/^\d{9}$/)]],
-      fechaNacimiento: [''],
-      direccion: [''],
-
-      // Campos adicionales según tu interfaz TbUsuario
-      estado: [true, Validators.required],
-      rol: ['', Validators.required]
+      telefono: ['', [Validators.pattern(/^\d{9}$/)]]
     }, {
       validators: this.passwordMatchValidator
     });
 
     // Si es edición, hacer password opcional
     if (this.isEditMode) {
-      this.usuarioForm.get('password')?.clearValidators();
+      this.usuarioForm.get('clave')?.clearValidators();
       this.usuarioForm.get('confirmPassword')?.clearValidators();
     }
   }
 
   private passwordMatchValidator(form: FormGroup) {
-    const password = form.get('password');
+    const clave = form.get('clave');
     const confirmPassword = form.get('confirmPassword');
 
-    if (password?.value && confirmPassword?.value && password.value !== confirmPassword.value) {
+    if (clave?.value && confirmPassword?.value && clave.value !== confirmPassword.value) {
       confirmPassword?.setErrors({ passwordMismatch: true });
       return { passwordMismatch: true };
     }
@@ -123,7 +119,7 @@ export class UsuariosRegistroComponent implements OnInit {
         apellidoMaterno: usuario.tbPersona?.apellidoMaterno || '',
         dni: usuario.tbPersona?.dni || '',
         email: usuario.tbPersona?.email || '',
-        telefono: usuario.tbPersona?.telefono || '',
+        telefono: usuario.tbPersona?.telefono || ''
       });
     }
   }
@@ -134,7 +130,7 @@ export class UsuariosRegistroComponent implements OnInit {
       const formData = this.usuarioForm.value;
 
       // Preparar datos según tu estructura TbUsuario
-      const usuarioData: Partial<TbUsuario> = {
+      const usuarioData: TbUsuario = {
         usuario: formData.usuario,
         tbPersona: {
           nombres: formData.nombres,
@@ -142,12 +138,21 @@ export class UsuariosRegistroComponent implements OnInit {
           apellidoMaterno: formData.apellidoMaterno,
           dni: formData.dni,
           email: formData.email,
-          telefono: formData.telefono,
+          telefono: formData.telefono
         }
       };
 
+      // Solo agregar clave si se proporcionó
+      if (formData.clave) {
+        usuarioData.clave = formData.clave;
+      }
+
       if (this.isEditMode) {
         usuarioData.id = this.data.usuario.id;
+        // Mantener el ID de la persona si existe
+        if (this.data.usuario.tbPersona?.id) {
+          usuarioData.tbPersona!.id = this.data.usuario.tbPersona.id;
+        }
         this.updateUser(usuarioData);
       } else {
         this.createUser(usuarioData);
@@ -157,32 +162,30 @@ export class UsuariosRegistroComponent implements OnInit {
     }
   }
 
-  private createUser(userData: Partial<TbUsuario>) {
-    // this._tbUsuarioService.create(userData).subscribe({
-    //   next: (response) => {
-    //     this.isLoading = false;
-    //     this._dialogRef.close({ success: true, data: response, action: 'create' });
-    //   },
-    //   error: (error) => {
-    //     this.isLoading = false;
-    //     console.error('Error al crear usuario:', error);
-    //     // Aquí puedes mostrar un snackbar o notificación de error
-    //   }
-    // });
+  private createUser(userData: TbUsuario) {
+    this._tbUsuarioService.insert(userData).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        this._dialogRef.close({ success: true, data: response, action: 'create' });
+      },
+      error: (error) => {
+        this.isLoading = false;
+        console.error('Error al crear usuario:', error);
+      }
+    });
   }
 
-  private updateUser(userData: Partial<TbUsuario>) {
-    // this._tbUsuarioService.update(userData.id!, userData).subscribe({
-    //   next: (response) => {
-    //     this.isLoading = false;
-    //     this._dialogRef.close({ success: true, data: response, action: 'update' });
-    //   },
-    //   error: (error) => {
-    //     this.isLoading = false;
-    //     console.error('Error al actualizar usuario:', error);
-    //     // Aquí puedes mostrar un snackbar o notificación de error
-    //   }
-    // });
+  private updateUser(userData: TbUsuario) {
+    this._tbUsuarioService.update(userData).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        this._dialogRef.close({ success: true, data: response, action: 'update' });
+      },
+      error: (error) => {
+        this.isLoading = false;
+        console.error('Error al actualizar usuario:', error);
+      }
+    });
   }
 
   private markFormGroupTouched() {
@@ -224,15 +227,14 @@ export class UsuariosRegistroComponent implements OnInit {
   private getFieldLabel(fieldName: string): string {
     const labels: { [key: string]: string } = {
       usuario: 'Usuario',
-      password: 'Contraseña',
+      clave: 'Contraseña',
       confirmPassword: 'Confirmar contraseña',
       nombres: 'Nombres',
       apellidoPaterno: 'Apellido paterno',
       apellidoMaterno: 'Apellido materno',
       dni: 'DNI',
       email: 'Email',
-      telefono: 'Teléfono',
-      rol: 'Rol'
+      telefono: 'Teléfono'
     };
     return labels[fieldName] || fieldName;
   }

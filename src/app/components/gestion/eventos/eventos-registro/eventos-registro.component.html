@@ -1,1 +1,159 @@
-<p>eventos-registro works!</p>
+<mat-card class="cardWithShadow theme-card">
+  <mat-card-header>
+    <mat-card-title class="m-b-0">
+      <span
+        class="iconify me-2"
+        [attr.data-icon]="'solar:calendar-mark-outline'"
+        data-inline="false"
+        style="font-size: 28px;">
+      </span>
+      Eventos
+      <span style="font-size: 0.875em !important;" class="pt-2 ps-1">{{ data.action }}</span>
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content class="b-t-1">
+    <form [formGroup]="eventoForm" (ngSubmit)="onSubmit()" class="evento-form">
+
+      <!-- Sección: Información Básica -->
+      <div class="section-header">
+        <h3 class="section-title">
+          <mat-icon>info</mat-icon>
+          Información Básica
+        </h3>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Código</mat-label>
+            <input matInput formControlName="codigo" placeholder="Ej: EVT001"
+                   [readonly]="isReadOnlyMode" style="text-transform: uppercase;">
+            <mat-error *ngIf="f['codigo'].touched && f['codigo'].errors && !isReadOnlyMode">
+              {{ getErrorMessage('codigo') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="col-md-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Nombre del Evento</mat-label>
+            <input matInput formControlName="nombre" placeholder="Ingrese el nombre del evento"
+                   [readonly]="isReadOnlyMode">
+            <mat-error *ngIf="f['nombre'].touched && f['nombre'].errors && !isReadOnlyMode">
+              {{ getErrorMessage('nombre') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Sección: Fechas del Evento -->
+      <div class="section-header mt-4">
+        <h3 class="section-title">
+          <mat-icon>date_range</mat-icon>
+          Fechas del Evento
+        </h3>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Fecha de Inicio</mat-label>
+            <input matInput
+                   [matDatepicker]="startPicker"
+                   formControlName="fechaInicio"
+                   placeholder="Seleccione fecha de inicio"
+                   [readonly]="isReadOnlyMode"
+                   [min]="minDate"
+                   (dateChange)="onStartDateChange()">
+            <mat-datepicker-toggle matIconSuffix [for]="startPicker" [disabled]="isReadOnlyMode"></mat-datepicker-toggle>
+            <mat-datepicker #startPicker [disabled]="isReadOnlyMode"></mat-datepicker>
+            <mat-error *ngIf="f['fechaInicio'].touched && f['fechaInicio'].errors && !isReadOnlyMode">
+              {{ getErrorMessage('fechaInicio') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="col-md-6">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Fecha de Fin</mat-label>
+            <input matInput
+                   [matDatepicker]="endPicker"
+                   formControlName="fechaFin"
+                   placeholder="Seleccione fecha de fin"
+                   [readonly]="isReadOnlyMode"
+                   [min]="getMinEndDate()">
+            <mat-datepicker-toggle matIconSuffix [for]="endPicker" [disabled]="isReadOnlyMode"></mat-datepicker-toggle>
+            <mat-datepicker #endPicker [disabled]="isReadOnlyMode"></mat-datepicker>
+            <mat-error *ngIf="f['fechaFin'].touched && f['fechaFin'].errors && !isReadOnlyMode">
+              {{ getErrorMessage('fechaFin') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Información adicional (solo en modo ver o editar) -->
+      <div *ngIf="(isEditMode || isReadOnlyMode) && f['fechaInicio'].value && f['fechaFin'].value"
+           class="section-header mt-4">
+        <h3 class="section-title">
+          <mat-icon>schedule</mat-icon>
+          Información del Evento
+        </h3>
+
+        <div class="row mt-3">
+          <div class="col-md-12">
+            <div class="alert alert-info p-3 border-radius-8">
+              <div class="row">
+                <div class="col-md-4">
+                  <strong>Duración:</strong>
+                  <span class="ms-2">{{ getDuracionEvento() }} día(s)</span>
+                </div>
+                <div class="col-md-4">
+                  <strong>Estado:</strong>
+                  <span class="ms-2"
+                        [ngClass]="{
+                          'text-primary fw-bold': getEventStatus() === 'Próximo',
+                          'text-success fw-bold': getEventStatus() === 'En curso',
+                          'text-danger fw-bold': getEventStatus() === 'Finalizado'
+                        }">
+                    {{ getEventStatus() }}
+                  </span>
+                </div>
+                <div class="col-md-4">
+                  <strong>Código:</strong>
+                  <span class="ms-2 text-uppercase fw-bold">{{ f['codigo'].value || 'Sin asignar' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </form>
+  </mat-card-content>
+
+  <mat-card-footer class="p-3">
+    <div class="d-flex justify-content-end gap-2">
+
+      <button mat-stroked-button class="me-2" type="button" (click)="onParticipantes()" [disabled]="isLoading" *ngIf="isReadOnlyMode">
+        <mat-icon>visibility</mat-icon>
+        Ver participantes
+      </button>
+
+      <button mat-stroked-button type="button" (click)="onCancel()" [disabled]="isLoading">
+        <mat-icon>close</mat-icon>
+        {{ isReadOnlyMode ? 'Cerrar' : 'Cancelar' }}
+      </button>
+
+      <button mat-flat-button color="primary" type="submit"
+              (click)="onSubmit()"
+              [disabled]="eventoForm.invalid || isLoading || isReadOnlyMode"
+              class="ms-2"
+              *ngIf="!isReadOnlyMode">
+        <mat-icon *ngIf="!isLoading">{{ isEditMode ? 'edit' : 'save' }}</mat-icon>
+        <mat-icon *ngIf="isLoading" class="spinning">sync</mat-icon>
+        {{ isLoading ? 'Guardando...' : (isEditMode ? 'Actualizar' : 'Guardar') }}
+      </button>
+    </div>
+  </mat-card-footer>
+</mat-card>

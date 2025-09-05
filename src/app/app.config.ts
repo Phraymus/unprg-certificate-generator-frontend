@@ -28,6 +28,7 @@ import {MaterialModule} from './material.module';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {AllCommunityModule, ModuleRegistry} from "ag-grid-community";
 import {AgGridModule} from "ag-grid-angular";
+import { provideNativeDateAdapter } from '@angular/material/core';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -38,6 +39,7 @@ if ((window as any).ENABLE_PROD_MODE) {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({eventCoalescing: true}),
+    provideNativeDateAdapter(),
     provideRouter(
       routes,
       withInMemoryScrolling({
