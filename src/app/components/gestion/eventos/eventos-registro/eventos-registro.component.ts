@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit, inject } from '@angular/core';
 import { MatCard, MatCardContent, MatCardFooter, MatCardHeader, MatCardTitle } from "@angular/material/card";
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import {MAT_DIALOG_DATA, MatDialogRef, MatDialogModule, MatDialog} from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -11,6 +11,9 @@ import {DateAdapter, MatNativeDateModule} from '@angular/material/core';
 import {CommonModule, NgIf} from '@angular/common';
 import { TbEvento } from "~shared/interfaces";
 import { TbEventoService } from "app/services";
+import {
+  ParticipantesListadoComponent
+} from "app/components/gestion/eventos/eventos-registro/participantes/participantes-listado/participantes-listado.component";
 
 interface DialogData {
   action: 'Registrar' | 'Editar' | 'Ver';
@@ -45,6 +48,7 @@ interface DialogData {
 export class EventosRegistroComponent implements OnInit {
   private _formBuilder: FormBuilder = inject(FormBuilder);
   private _tbEventoService: TbEventoService = inject(TbEventoService);
+  private _matDialog: MatDialog = inject(MatDialog);
   private _dialogRef: MatDialogRef<EventosRegistroComponent> = inject(MatDialogRef<EventosRegistroComponent>);
 
   eventoForm!: FormGroup;
@@ -278,7 +282,22 @@ export class EventosRegistroComponent implements OnInit {
     return diffDays + 1; // +1 porque incluye ambos días
   }
 
-  onParticipantes() {
+  onParticipantes(evento: any) {
+    evento={}
+    evento = this.data.evento;
+    const dialogRef = this._matDialog.open(ParticipantesListadoComponent, {
+      width: '95vw',
+      maxWidth: '1400px',
+      height: '83vh',
+      maxHeight: '90vh',
+      data: { evento },
+      disableClose: false,
+      panelClass: 'custom-dialog-container'
+    });
 
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('Modal de participantes cerrado');
+      // Aquí puedes realizar alguna acción después de cerrar el modal si es necesario
+    });
   }
 }

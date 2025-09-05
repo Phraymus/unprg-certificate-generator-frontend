@@ -47,13 +47,13 @@ export const navItems: NavItem[] = [
     chipClass: 'bg-secondary text-white',
     chipContent: 'Nuevo',
   },
-  {
-    displayName: 'FlashCards',
-    iconName: 'solar:bill-list-line-duotone',
-    route: '/gestion/flashcards',
-    chipClass: 'bg-secondary text-white',
-    chipContent: 'Nuevo',
-  },
+  // {
+  //   displayName: 'FlashCards',
+  //   iconName: 'solar:bill-list-line-duotone',
+  //   route: '/gestion/flashcards',
+  //   chipClass: 'bg-secondary text-white',
+  //   chipContent: 'Nuevo',
+  // },
   // {
   //   displayName: 'Analytics',
   //   iconName: 'solar:widget-add-line-duotone',

@@ -4,8 +4,8 @@ import { TbPersona } from './TbPersona.interface';
 
 export interface TbParticipante {
   id?: TbParticipanteId;
-  idtbEvento?: TbEvento;
-  idtbPersona?: TbPersona;
+  tbEvento?: TbEvento;
+  tbPersona?: TbPersona;
   estado?: string;
   fechaInscripcion?: string;
   nota?: number; // BigDecimal se mapea a number en TypeScript
