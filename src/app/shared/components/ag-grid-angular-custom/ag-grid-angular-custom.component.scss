@@ -1,0 +1,102 @@
+// Estilos para el ag-grid personalizado
+:host {
+  display: block;
+  width: 100%;
+}
+
+// Estilos para las celdas del grid
+::ng-deep .ag-theme-alpine .ag-cell {
+  display: flex;
+  align-items: center;
+
+  &.ag-cell-focus {
+    border: none !important;
+  }
+}
+
+// Para que los botones se vean mejor centrados
+::ng-deep .action-buttons-container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0;
+  margin: 0;
+}
+
+// Asegurar que la celda también esté centrada
+::ng-deep .ag-theme-alpine .ag-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+
+  &.ag-cell-focus {
+    border: none !important;
+  }
+}
+
+// Estilos específicos para la columna de acciones
+::ng-deep .ag-theme-alpine .ag-cell[col-id*="acciones"],
+::ng-deep .ag-theme-alpine .ag-cell[aria-colindex]:last-child {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+// Centrar los botones de Material
+::ng-deep .action-buttons-container .mat-mdc-icon-button {
+  margin: 0;
+  vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Estilos adicionales para el card
+.cardWithShadow {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.theme-card {
+  border-radius: 8px;
+}
+
+// Estilos para el header del card
+mat-card-header {
+  padding-bottom: 16px;
+}
+
+// Estilos para el contenido del card
+mat-card-content {
+  padding-top: 0;
+}
+
+// Estilos para el input de búsqueda
+.form-control {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  }
+}
+
+// Estilos para el botón agregar
+.bg-warning {
+  background-color: #ffc107 !important;
+  border-color: #ffc107 !important;
+  color: #000 !important;
+
+  &:hover {
+    background-color: #e0a800 !important;
+    border-color: #d39e00 !important;
+  }
+}

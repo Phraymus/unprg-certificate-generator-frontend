@@ -4,14 +4,15 @@
     <!-- Vertical Sidebar -->
     <!-- ============================================================== -->
     <mat-sidenav #leftsidenav [mode]="isOver ? 'over' : 'side'" [opened]="!isOver"
-      (openedChange)="onSidenavOpenedChange($event)" (closedStart)="onSidenavClosedStart()" class="sidebarNav">
+                 (openedChange)="onSidenavOpenedChange($event)" (closedStart)="onSidenavClosedStart()"
+                 class="sidebarNav">
       <div class="flex-layout">
         <app-sidebar (toggleMobileNav)="sidenav.toggle()" [showToggle]="isOver"></app-sidebar>
         <ng-scrollbar class="position-relative" style="height: 100%">
           <mat-nav-list class="sidebar-list">
-            @for(item of navItems; track item) {
-            <app-nav-item [item]="item" (notify)="sidenav.toggle()">
-            </app-nav-item>
+            @for (item of navItems; track item) {
+              <app-nav-item [item]="item" (notify)="sidenav.toggle()">
+              </app-nav-item>
             }
           </mat-nav-list>
         </ng-scrollbar>
@@ -26,10 +27,12 @@
       <!-- VerticalHeader -->
       <!-- ============================================================== -->
       <app-header [showToggle]="!isOver" (toggleCollapsed)="toggleCollapsed()"
-        (toggleMobileNav)="sidenav.toggle()"></app-header>
+                  (toggleMobileNav)="sidenav.toggle()"></app-header>
 
       <div class="body-wrapper">
+        <!--        <main class="pageWrapper maxWidth">-->
         <main class="pageWrapper maxWidth">
+
           <!-- ============================================================== -->
           <!-- Outlet -->
           <!-- ============================================================== -->
