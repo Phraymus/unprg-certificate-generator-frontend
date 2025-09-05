@@ -10,11 +10,11 @@ export abstract class GenericCrudService<T> implements CrudService<T> {
   }
 
   findById(idCrud: number): Observable<T> {
-    return this.http.get<ApiResponse>(`${this.url}/model-se-ro/${idCrud}`).pipe(map((res) => res.data));
+    return this.http.get<ApiResponse>(`${this.url}/${idCrud}`).pipe(map((res) => res.data));
   }
 
   findAll(): Observable<T[]> {
-    return this.http.get<ApiResponse>(`${this.url}/model-se-ro/findAll`).pipe(map((res) => res.data));
+    return this.http.get<ApiResponse>(`${this.url}/findAll`).pipe(map((res) => res.data));
   }
 
   insert(resource: T): Observable<T> {

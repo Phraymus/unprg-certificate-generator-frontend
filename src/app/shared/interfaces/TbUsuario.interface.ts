@@ -4,5 +4,5 @@ export interface TbUsuario {
   id?: number;
   usuario?: string;
   clave?: string;
-  idtbPersona?: TbPersona;
+  tbPersona?: TbPersona;
 }
