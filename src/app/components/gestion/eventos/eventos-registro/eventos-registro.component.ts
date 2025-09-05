@@ -1,16 +1,16 @@
-import { Component, Inject, OnInit, inject } from '@angular/core';
-import { MatCard, MatCardContent, MatCardFooter, MatCardHeader, MatCardTitle } from "@angular/material/card";
+import {Component, Inject, OnInit, inject} from '@angular/core';
+import {MatCard, MatCardContent, MatCardFooter, MatCardHeader, MatCardTitle} from "@angular/material/card";
 import {MAT_DIALOG_DATA, MatDialogRef, MatDialogModule, MatDialog} from '@angular/material/dialog';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import {DateAdapter, MatNativeDateModule} from '@angular/material/core';
+import {FormBuilder, FormGroup, Validators, ReactiveFormsModule} from '@angular/forms';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
+import {MatDatepickerModule} from '@angular/material/datepicker';
+import {MatNativeDateModule} from '@angular/material/core';
 import {CommonModule, NgIf} from '@angular/common';
-import { TbEvento } from "~shared/interfaces";
-import { TbEventoService } from "app/services";
+import {TbEvento} from "~shared/interfaces";
+import {TbEventoService} from "app/services";
 import {
   ParticipantesListadoComponent
 } from "app/components/gestion/eventos/eventos-registro/participantes/participantes-listado/participantes-listado.component";
@@ -93,8 +93,8 @@ export class EventosRegistroComponent implements OnInit {
       const fin = new Date(fechaFin.value);
 
       if (fin < inicio) {
-        fechaFin?.setErrors({ dateRange: true });
-        return { dateRange: true };
+        fechaFin?.setErrors({dateRange: true});
+        return {dateRange: true};
       }
     }
 
@@ -152,7 +152,7 @@ export class EventosRegistroComponent implements OnInit {
     this._tbEventoService.insert(eventoData).subscribe({
       next: (response) => {
         this.isLoading = false;
-        this._dialogRef.close({ success: true, data: response, action: 'create' });
+        this._dialogRef.close({success: true, data: response, action: 'create'});
       },
       error: (error) => {
         this.isLoading = false;
@@ -165,7 +165,7 @@ export class EventosRegistroComponent implements OnInit {
     this._tbEventoService.update(eventoData).subscribe({
       next: (response) => {
         this.isLoading = false;
-        this._dialogRef.close({ success: true, data: response, action: 'update' });
+        this._dialogRef.close({success: true, data: response, action: 'update'});
       },
       error: (error) => {
         this.isLoading = false;
@@ -182,11 +182,13 @@ export class EventosRegistroComponent implements OnInit {
   }
 
   onCancel() {
-    this._dialogRef.close({ success: false });
+    this._dialogRef.close({success: false});
   }
 
   // Getters para facilitar el acceso a los controles del formulario
-  get f() { return this.eventoForm.controls; }
+  get f() {
+    return this.eventoForm.controls;
+  }
 
   getErrorMessage(fieldName: string): string {
     const control = this.eventoForm.get(fieldName);
@@ -266,6 +268,7 @@ export class EventosRegistroComponent implements OnInit {
       return 'Finalizado';
     }
   }
+
   getDuracionEvento(): number {
     const fechaInicio = this.eventoForm.get('fechaInicio')?.value;
     const fechaFin = this.eventoForm.get('fechaFin')?.value;
@@ -283,14 +286,14 @@ export class EventosRegistroComponent implements OnInit {
   }
 
   onParticipantes(evento: any) {
-    evento={}
+    evento = {}
     evento = this.data.evento;
     const dialogRef = this._matDialog.open(ParticipantesListadoComponent, {
       width: '95vw',
       maxWidth: '1400px',
       height: '83vh',
       maxHeight: '90vh',
-      data: { evento },
+      data: {evento},
       disableClose: false,
       panelClass: 'custom-dialog-container'
     });

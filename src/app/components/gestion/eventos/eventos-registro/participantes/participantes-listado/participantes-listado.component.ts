@@ -11,6 +11,7 @@ import { MatIcon } from "@angular/material/icon";
 import {
   ParticipantesRegistroComponent
 } from "app/components/gestion/eventos/eventos-registro/participantes/participantes-registro/participantes-registro.component";
+import {CertificateGeneratorService} from "~shared/classes/CertificateGeneratorService.service";
 
 interface ParticipantesDialogData {
   evento: TbEvento;
@@ -36,6 +37,8 @@ export class ParticipantesListadoComponent implements OnInit {
   private _matDialog: MatDialog = inject(MatDialog);
   private _snackBar: MatSnackBar = inject(MatSnackBar);
   private _dialogRef: MatDialogRef<ParticipantesListadoComponent> = inject(MatDialogRef<ParticipantesListadoComponent>);
+  private _certificateGenerator: CertificateGeneratorService = inject(CertificateGeneratorService);
+
 
   rowData: TbParticipante[] = [];
 
@@ -216,7 +219,7 @@ export class ParticipantesListadoComponent implements OnInit {
     });
   }
 
-  onDownload(rowData: TbParticipante) {
+  async onDownload(rowData: TbParticipante) {
     console.log('Descargando:', rowData);
 
     try {
@@ -240,19 +243,23 @@ export class ParticipantesListadoComponent implements OnInit {
         }
       };
 
-      const dataStr = JSON.stringify(exportData, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(dataBlob);
+      await this._certificateGenerator.generateCertificateFromParticipant(exportData);
 
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `participante_${rowData.tbPersona?.dni}_${this.data.evento.codigo}_${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      this.showMessage('Certificado generado y descargado exitosamente', 'success');
 
-      this.showMessage('Datos del participante descargados exitosamente', 'success');
+      // const dataStr = JSON.stringify(exportData, null, 2);
+      // const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      // const url = URL.createObjectURL(dataBlob);
+      //
+      // const link = document.createElement('a');
+      // link.href = url;
+      // link.download = `participante_${rowData.tbPersona?.dni}_${this.data.evento.codigo}_${new Date().toISOString().split('T')[0]}.json`;
+      // document.body.appendChild(link);
+      // link.click();
+      // document.body.removeChild(link);
+      // URL.revokeObjectURL(url);
+      //
+      // this.showMessage('Datos del participante descargados exitosamente', 'success');
     } catch (error) {
       console.error('Error al descargar:', error);
       this.showMessage('Error al descargar los datos', 'error');

@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
+import {BrandingComponent} from "app/layouts/branding/branding.component";
 
 export const routes: Routes = [
   {
@@ -35,6 +36,10 @@ export const routes: Routes = [
           import('./pages/extra/extra.routes').then((m) => m.ExtraRoutes),
       },
     ],
+  },
+  {
+    path: 'branding',
+    component: BrandingComponent,
   },
   {
     path: '',
