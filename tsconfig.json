@@ -26,6 +26,7 @@
       "~interfaces/*": ["app/shared/interfaces/*"],
       "~shared/*": ["app/shared/*"],
       "~environments/*": ["environments/*"],
+      "app/*": ["app/*"],
     }
   },
   "angularCompilerOptions": {
