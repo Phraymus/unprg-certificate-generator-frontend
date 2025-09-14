@@ -1,20 +1,21 @@
-import { Component, Inject, OnInit, inject } from '@angular/core';
-import { MatCard, MatCardContent, MatCardFooter, MatCardHeader, MatCardTitle } from "@angular/material/card";
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { CommonModule } from '@angular/common';
-import { TbParticipante, TbPersona, TbEvento } from "~shared/interfaces";
-import { TbParticipanteService, TbPersonaService } from "app/services";
-import { Observable, of } from 'rxjs';
-import { map, startWith, debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import {Component, Inject, OnInit, inject} from '@angular/core';
+import {MatCard, MatCardContent, MatCardFooter, MatCardHeader, MatCardTitle} from "@angular/material/card";
+import {MAT_DIALOG_DATA, MatDialogRef, MatDialogModule} from '@angular/material/dialog';
+import {FormBuilder, FormGroup, Validators, ReactiveFormsModule} from '@angular/forms';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
+import {MatSelectModule} from '@angular/material/select';
+import {MatDatepickerModule} from '@angular/material/datepicker';
+import {MatNativeDateModule} from '@angular/material/core';
+import {CommonModule} from '@angular/common';
+import {TbParticipante, TbPersona, TbEvento} from "~shared/interfaces";
+import {TbParticipanteService, TbPersonaService} from "app/services";
+import {Observable, of} from 'rxjs';
+import {startWith, debounceTime, distinctUntilChanged, switchMap, catchError} from 'rxjs/operators';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
+import {stringAEnumParticipante} from "~shared/enums/EstadoParticipanteEnum";
 
 interface DialogData {
   action: 'Registrar' | 'Editar' | 'Ver';
@@ -58,6 +59,7 @@ export class ParticipantesRegistroComponent implements OnInit {
   isEditMode = false;
   isReadOnlyMode = false;
   personaExistente = false;
+  personaExistenteDto: TbPersona = null;
   personasFiltradas!: Observable<TbPersona[]>;
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: DialogData) {
@@ -105,11 +107,11 @@ export class ParticipantesRegistroComponent implements OnInit {
         debounceTime(300),
         distinctUntilChanged(),
         switchMap(value => {
-          // if (typeof value === 'string' && value.length >= 2) {
-          //   return this._tbPersonaService.searchPersonas(value).pipe(
-          //     catchError(() => of([]))
-          //   );
-          // }
+          if (typeof value === 'string' && value.length >= 2) {
+            return this._tbPersonaService.findAllByNombreOrDni(value).pipe(
+              catchError(() => of([]))
+            );
+          }
           return of([]);
         })
       );
@@ -139,6 +141,7 @@ export class ParticipantesRegistroComponent implements OnInit {
     const persona: TbPersona = event.option.value;
     if (persona) {
       this.personaExistente = true;
+      this.personaExistenteDto = persona;
       this.participanteForm.patchValue({
         dni: persona.dni,
         nombres: persona.nombres,
@@ -182,8 +185,8 @@ export class ParticipantesRegistroComponent implements OnInit {
       // Preparar datos de participante
       const participanteData: TbParticipante = {
         tbEvento: this.data.evento,
-        tbPersona: personaData,
-        estado: formData.estado,
+        tbPersona: this.personaExistente ? this.personaExistenteDto : personaData,
+        estado: stringAEnumParticipante(formData.estado),
         fechaInscripcion: formData.fechaInscripcion ?
           new Date(formData.fechaInscripcion).toISOString().split('T')[0] :
           new Date().toISOString().split('T')[0],
@@ -209,7 +212,7 @@ export class ParticipantesRegistroComponent implements OnInit {
     this._tbParticipanteService.insert(participanteData).subscribe({
       next: (response) => {
         this.isLoading = false;
-        this._dialogRef.close({ success: true, data: response, action: 'create' });
+        this._dialogRef.close({success: true, data: response, action: 'create'});
       },
       error: (error) => {
         this.isLoading = false;
@@ -223,7 +226,7 @@ export class ParticipantesRegistroComponent implements OnInit {
     this._tbParticipanteService.update(participanteData).subscribe({
       next: (response) => {
         this.isLoading = false;
-        this._dialogRef.close({ success: true, data: response, action: 'update' });
+        this._dialogRef.close({success: true, data: response, action: 'update'});
       },
       error: (error) => {
         this.isLoading = false;
@@ -241,11 +244,13 @@ export class ParticipantesRegistroComponent implements OnInit {
   }
 
   onCancel() {
-    this._dialogRef.close({ success: false });
+    this._dialogRef.close({success: false});
   }
 
   // Getters para facilitar el acceso a los controles del formulario
-  get f() { return this.participanteForm.controls; }
+  get f() {
+    return this.participanteForm.controls;
+  }
 
   getErrorMessage(fieldName: string): string {
     const control = this.participanteForm.get(fieldName);

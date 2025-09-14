@@ -140,10 +140,10 @@
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Estado</mat-label>
             <mat-select formControlName="estado" [disabled]="isReadOnlyMode">
-              <mat-option value="Activo">Activo</mat-option>
-              <mat-option value="Inactivo">Inactivo</mat-option>
-              <mat-option value="Pendiente">Pendiente</mat-option>
-              <mat-option value="Completado">Completado</mat-option>
+              <mat-option value="1">Activo</mat-option>
+              <mat-option value="2">Inactivo</mat-option>
+              <mat-option value="3">Pendiente</mat-option>
+              <mat-option value="4">Completado</mat-option>
             </mat-select>
             <mat-error *ngIf="f['estado'].touched && f['estado'].errors && !isReadOnlyMode">
               {{ getErrorMessage('estado') }}

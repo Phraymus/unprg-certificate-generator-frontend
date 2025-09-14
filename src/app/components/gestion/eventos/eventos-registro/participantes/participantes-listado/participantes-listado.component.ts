@@ -1,17 +1,22 @@
-import { Component, inject, OnInit, Inject } from '@angular/core';
-import { AgGridAngularCustomComponent } from "~shared/components/ag-grid-angular-custom/ag-grid-angular-custom.component";
+import {Component, inject, Inject, OnInit} from '@angular/core';
+import {AgGridAngularCustomComponent} from "~shared/components/ag-grid-angular-custom/ag-grid-angular-custom.component";
 import {MatCard, MatCardContent, MatCardFooter, MatCardHeader, MatCardTitle} from "@angular/material/card";
-import { ColDef } from "ag-grid-community";
-import { TbParticipanteService, TbEventoService } from "app/services";
-import { TbParticipante, TbEvento } from "~shared/interfaces";
-import { MatDialog, MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatButton } from "@angular/material/button";
-import { MatIcon } from "@angular/material/icon";
+import {ColDef} from "ag-grid-community";
+import {TbParticipanteService} from "app/services";
+import {TbEvento, TbParticipante} from "~shared/interfaces";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {MatButton} from "@angular/material/button";
+import {MatIcon} from "@angular/material/icon";
 import {
   ParticipantesRegistroComponent
 } from "app/components/gestion/eventos/eventos-registro/participantes/participantes-registro/participantes-registro.component";
 import {CertificateGeneratorService} from "~shared/classes/CertificateGeneratorService.service";
+import {
+  EstadoParticipanteEnum,
+  stringAEnumParticipante,
+  valueAStringParticipante
+} from "~shared/enums/EstadoParticipanteEnum";
 
 interface ParticipantesDialogData {
   evento: TbEvento;
@@ -84,10 +89,10 @@ export class ParticipantesListadoComponent implements OnInit {
       headerName: "Estado",
       width: 120,
       cellRenderer: (params: any) => {
-        const estado = params.value || 'Pendiente';
-        const colorClass = estado === 'Activo' ? 'text-success' :
-          estado === 'Inactivo' ? 'text-danger' : 'text-warning';
-        return `<span class="${colorClass}">${estado}</span>`;
+        const estado = stringAEnumParticipante(valueAStringParticipante(params.value)) || 'Pendiente';
+        const colorClass = estado === EstadoParticipanteEnum.Activo ? 'text-success' :
+          estado === EstadoParticipanteEnum.Inactivo ? 'text-danger' : 'text-warning';
+        return `<span class="${colorClass}">${valueAStringParticipante(params.value)}</span>`;
       }
     },
     {
