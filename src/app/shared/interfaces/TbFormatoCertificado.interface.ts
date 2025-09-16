@@ -5,5 +5,10 @@ export interface TbFormatoCertificado {
   codigo?: string;
   nombreFormato?: string;
   rutaFormato?: string;
-  idtbUsuario?: TbUsuario;
+  tbUsuario?: TbUsuario;
+  idtbUsuario?: number;
+  // Propiedades adicionales para el frontend
+  archivo?: File;
+  fechaCreacion?: string;
+  tamanoArchivo?: number;
 }
