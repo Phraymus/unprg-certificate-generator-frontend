@@ -8,12 +8,14 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatDatepickerModule} from '@angular/material/datepicker';
 import {MatNativeDateModule} from '@angular/material/core';
+import {MatSelectModule} from '@angular/material/select';
 import {CommonModule, NgIf} from '@angular/common';
-import {TbEvento} from "~shared/interfaces";
-import {TbEventoService} from "app/services";
+import {TbEvento, TbFormatoCertificado, TbEventoFormatoCertificado} from "~shared/interfaces";
+import {TbEventoService, TbFormatoCertificadoService, TbEventoFormatoCertificadoService} from "app/services";
 import {
   ParticipantesListadoComponent
 } from "app/components/gestion/eventos/eventos-registro/participantes/participantes-listado/participantes-listado.component";
+import {forkJoin} from 'rxjs';
 
 interface DialogData {
   action: 'Registrar' | 'Editar' | 'Ver';
@@ -39,6 +41,7 @@ interface DialogData {
     MatIconModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatSelectModule,
     NgIf,
   ],
   templateUrl: './eventos-registro.component.html',
@@ -48,6 +51,8 @@ interface DialogData {
 export class EventosRegistroComponent implements OnInit {
   private _formBuilder: FormBuilder = inject(FormBuilder);
   private _tbEventoService: TbEventoService = inject(TbEventoService);
+  private _tbFormatoCertificadoService: TbFormatoCertificadoService = inject(TbFormatoCertificadoService);
+  private _tbEventoFormatoCertificadoService: TbEventoFormatoCertificadoService = inject(TbEventoFormatoCertificadoService);
   private _matDialog: MatDialog = inject(MatDialog);
   private _dialogRef: MatDialogRef<EventosRegistroComponent> = inject(MatDialogRef<EventosRegistroComponent>);
 
@@ -57,6 +62,10 @@ export class EventosRegistroComponent implements OnInit {
   isReadOnlyMode = false;
   minDate = new Date(); // Fecha mínima es hoy
 
+  // Lista de formatos disponibles
+  formatosDisponibles: TbFormatoCertificado[] = [];
+  eventoFormatoActual: TbEventoFormatoCertificado | null = null;
+
   constructor(@Inject(MAT_DIALOG_DATA) public data: DialogData) {
     this.isEditMode = this.data.action === 'Editar';
     this.isReadOnlyMode = this.data.action === 'Ver' || this.data.readOnly === true;
@@ -64,6 +73,8 @@ export class EventosRegistroComponent implements OnInit {
 
   ngOnInit() {
     this.initializeForm();
+    this.loadFormatos();
+
     if ((this.isEditMode || this.isReadOnlyMode) && this.data.evento) {
       this.loadEventoData();
     }
@@ -78,9 +89,22 @@ export class EventosRegistroComponent implements OnInit {
       codigo: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(10)]],
       nombre: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
       fechaInicio: ['', [Validators.required]],
-      fechaFin: ['', [Validators.required]]
+      fechaFin: ['', [Validators.required]],
+      formatoCertificado: [''], // Campo para el formato de certificado
+      descripcionFormato: ['', [Validators.maxLength(200)]] // Campo para descripción del formato
     }, {
       validators: this.dateRangeValidator
+    });
+  }
+
+  private loadFormatos() {
+    this._tbFormatoCertificadoService.findAll().subscribe({
+      next: (formatos) => {
+        this.formatosDisponibles = formatos;
+      },
+      error: (error) => {
+        console.error('Error al cargar formatos:', error);
+      }
     });
   }
 
@@ -114,7 +138,52 @@ export class EventosRegistroComponent implements OnInit {
         fechaInicio: evento.fechaInicio ? new Date(evento.fechaInicio) : null,
         fechaFin: evento.fechaFin ? new Date(evento.fechaFin) : null
       });
+
+      // Cargar formato asociado si existe
+      if (evento.id) {
+        this.loadEventoFormato(evento.id);
+      }
     }
+  }
+
+  private loadEventoFormato(eventoId: number) {
+    // Usar el nuevo endpoint específico para buscar por ID de evento
+    this._tbEventoFormatoCertificadoService.findByEventoId(eventoId).subscribe({
+      next: (eventoFormato) => {
+        if (eventoFormato) {
+          this.eventoFormatoActual = eventoFormato;
+          this.eventoForm.patchValue({
+            formatoCertificado: eventoFormato.idtbFormatoCertificado?.id,
+            descripcionFormato: eventoFormato.descripcion || ''
+          });
+          console.log('Formato cargado:', eventoFormato);
+        }
+      },
+      error: (error) => {
+        console.log('No hay formato asociado al evento:', error);
+        // Fallback: buscar en la lista completa
+        this.loadEventoFormatoFromList(eventoId);
+      }
+    });
+  }
+
+  // Método alternativo: buscar en la lista completa si findById no funciona
+  private loadEventoFormatoFromList(eventoId: number) {
+    this._tbEventoFormatoCertificadoService.findAll().subscribe({
+      next: (eventoFormatos) => {
+        const eventoFormato = eventoFormatos.find(ef => ef.tbEvento?.id === eventoId);
+        if (eventoFormato) {
+          this.eventoFormatoActual = eventoFormato;
+          this.eventoForm.patchValue({
+            formatoCertificado: eventoFormato.idtbFormatoCertificado?.id,
+            descripcionFormato: eventoFormato.descripcion || ''
+          });
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar formatos de eventos:', error);
+      }
+    });
   }
 
   onSubmit() {
@@ -150,9 +219,14 @@ export class EventosRegistroComponent implements OnInit {
 
   private createEvento(eventoData: TbEvento) {
     this._tbEventoService.insert(eventoData).subscribe({
-      next: (response) => {
-        this.isLoading = false;
-        this._dialogRef.close({success: true, data: response, action: 'create'});
+      next: (evento) => {
+        // Si se seleccionó un formato, crear la relación
+        if (this.eventoForm.get('formatoCertificado')?.value) {
+          this.createEventoFormato(evento.id!, evento);
+        } else {
+          this.isLoading = false;
+          this._dialogRef.close({success: true, data: evento, action: 'create'});
+        }
       },
       error: (error) => {
         this.isLoading = false;
@@ -163,13 +237,122 @@ export class EventosRegistroComponent implements OnInit {
 
   private updateEvento(eventoData: TbEvento) {
     this._tbEventoService.update(eventoData).subscribe({
-      next: (response) => {
-        this.isLoading = false;
-        this._dialogRef.close({success: true, data: response, action: 'update'});
+      next: (evento) => {
+        // Manejar la relación con formato
+        this.handleEventoFormatoUpdate(evento);
       },
       error: (error) => {
         this.isLoading = false;
         console.error('Error al actualizar evento:', error);
+      }
+    });
+  }
+
+  private handleEventoFormatoUpdate(evento: TbEvento) {
+    const formatoSeleccionado = this.eventoForm.get('formatoCertificado')?.value;
+
+    if (formatoSeleccionado) {
+      if (this.eventoFormatoActual) {
+        // Actualizar relación existente
+        this.updateEventoFormato(evento);
+      } else {
+        // Crear nueva relación
+        this.createEventoFormato(evento.id!, evento);
+      }
+    } else {
+      // Si no hay formato seleccionado pero existía una relación, eliminarla
+      if (this.eventoFormatoActual) {
+        this.deleteEventoFormato(evento);
+      } else {
+        this.isLoading = false;
+        this._dialogRef.close({success: true, data: evento, action: 'update'});
+      }
+    }
+  }
+
+  private createEventoFormato(eventoId: number, evento: TbEvento) {
+    const formData = this.eventoForm.value;
+    const codigo = `${formData.codigo}-FMT`;
+
+    // Crear objetos mínimos para las relaciones
+    const eventoRelacion: TbEvento = { id: eventoId };
+    const formatoSeleccionado = this.formatosDisponibles.find(f => f.id === formData.formatoCertificado);
+
+    const eventoFormatoData: TbEventoFormatoCertificado = {
+      tbEvento: eventoRelacion,
+      idtbFormatoCertificado: formatoSeleccionado,
+      codigo: codigo,
+      descripcion: formData.descripcionFormato || `Formato para evento ${formData.nombre}`,
+      fecha: this.formatDateToISO(new Date())
+    };
+
+    this._tbEventoFormatoCertificadoService.insert(eventoFormatoData).subscribe({
+      next: (eventoFormato) => {
+        this.isLoading = false;
+        this._dialogRef.close({
+          success: true,
+          data: evento,
+          action: this.isEditMode ? 'update' : 'create'
+        });
+      },
+      error: (error) => {
+        this.isLoading = false;
+        console.error('Error al asociar formato al evento:', error);
+        // Aunque falle la asociación, el evento ya fue creado/actualizado
+        this._dialogRef.close({
+          success: true,
+          data: evento,
+          action: this.isEditMode ? 'update' : 'create',
+          warning: 'Evento guardado pero no se pudo asociar el formato'
+        });
+      }
+    });
+  }
+
+  private updateEventoFormato(evento: TbEvento) {
+    const formData = this.eventoForm.value;
+    const formatoSeleccionado = this.formatosDisponibles.find(f => f.id === formData.formatoCertificado);
+
+    const eventoFormatoData: TbEventoFormatoCertificado = {
+      ...this.eventoFormatoActual!,
+      idtbFormatoCertificado: formatoSeleccionado,
+      descripcion: formData.descripcionFormato || this.eventoFormatoActual!.descripcion,
+      fecha: this.formatDateToISO(new Date())
+    };
+
+    this._tbEventoFormatoCertificadoService.update(eventoFormatoData).subscribe({
+      next: (eventoFormato) => {
+        this.isLoading = false;
+        this._dialogRef.close({success: true, data: evento, action: 'update'});
+      },
+      error: (error) => {
+        this.isLoading = false;
+        console.error('Error al actualizar formato del evento:', error);
+        this._dialogRef.close({
+          success: true,
+          data: evento,
+          action: 'update',
+          warning: 'Evento actualizado pero no se pudo actualizar el formato'
+        });
+      }
+    });
+  }
+
+  private deleteEventoFormato(evento: TbEvento) {
+    this._tbEventoFormatoCertificadoService.delete(this.eventoFormatoActual!).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this._dialogRef.close({success: true, data: evento, action: 'update'});
+      },
+      error: (error) => {
+        this.isLoading = false;
+        console.error('Error al desasociar formato del evento:', error);
+        this._dialogRef.close({
+          success: true,
+          data: evento,
+          action: 'update',
+          warning: 'Evento actualizado pero no se pudo desasociar el formato'
+        });
       }
     });
   }
@@ -219,7 +402,9 @@ export class EventosRegistroComponent implements OnInit {
       codigo: 'Código',
       nombre: 'Nombre del evento',
       fechaInicio: 'Fecha de inicio',
-      fechaFin: 'Fecha de fin'
+      fechaFin: 'Fecha de fin',
+      formatoCertificado: 'Formato de certificado',
+      descripcionFormato: 'Descripción del formato'
     };
     return labels[fieldName] || fieldName;
   }
@@ -283,6 +468,16 @@ export class EventosRegistroComponent implements OnInit {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     return diffDays + 1; // +1 porque incluye ambos días
+  }
+
+  // Método para obtener nombre del formato seleccionado
+  getFormatoSeleccionadoNombre(): string {
+    const formatoId = this.eventoForm.get('formatoCertificado')?.value;
+    if (formatoId) {
+      const formato = this.formatosDisponibles.find(f => f.id === formatoId);
+      return formato ? formato.nombreFormato : 'Formato seleccionado';
+    }
+    return 'Sin formato asignado';
   }
 
   onParticipantes(evento: any) {

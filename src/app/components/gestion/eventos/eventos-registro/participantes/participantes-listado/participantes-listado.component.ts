@@ -2,7 +2,7 @@ import {Component, inject, Inject, OnInit} from '@angular/core';
 import {AgGridAngularCustomComponent} from "~shared/components/ag-grid-angular-custom/ag-grid-angular-custom.component";
 import {MatCard, MatCardContent, MatCardFooter, MatCardHeader, MatCardTitle} from "@angular/material/card";
 import {ColDef} from "ag-grid-community";
-import {TbParticipanteService} from "app/services";
+import {TbParticipanteService, TbCertificateService} from "app/services";
 import {TbEvento, TbParticipante} from "~shared/interfaces";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatSnackBar} from '@angular/material/snack-bar';
@@ -11,7 +11,6 @@ import {MatIcon} from "@angular/material/icon";
 import {
   ParticipantesRegistroComponent
 } from "app/components/gestion/eventos/eventos-registro/participantes/participantes-registro/participantes-registro.component";
-import {CertificateGeneratorService} from "~shared/classes/CertificateGeneratorService.service";
 import {
   EstadoParticipanteEnum,
   stringAEnumParticipante,
@@ -39,11 +38,10 @@ interface ParticipantesDialogData {
 })
 export class ParticipantesListadoComponent implements OnInit {
   private _tbParticipanteService: TbParticipanteService = inject(TbParticipanteService);
+  private _tbCertificateService: TbCertificateService = inject(TbCertificateService);
   private _matDialog: MatDialog = inject(MatDialog);
   private _snackBar: MatSnackBar = inject(MatSnackBar);
   private _dialogRef: MatDialogRef<ParticipantesListadoComponent> = inject(MatDialogRef<ParticipantesListadoComponent>);
-  private _certificateGenerator: CertificateGeneratorService = inject(CertificateGeneratorService);
-
 
   rowData: TbParticipante[] = [];
 
@@ -225,49 +223,43 @@ export class ParticipantesListadoComponent implements OnInit {
   }
 
   async onDownload(rowData: TbParticipante) {
-    console.log('Descargando:', rowData);
+    console.log('Generando certificado para:', rowData);
+
+    if (!rowData.tbPersona?.id || !rowData.tbEvento?.id) {
+      this.showMessage('Datos del participante incompletos', 'error');
+      return;
+    }
 
     try {
-      const exportData = {
-        evento: {
-          codigo: this.data.evento.codigo,
-          nombre: this.data.evento.nombre,
-          fechaInicio: this.data.evento.fechaInicio,
-          fechaFin: this.data.evento.fechaFin
-        },
-        participante: {
-          dni: rowData.tbPersona?.dni || '',
-          nombres: rowData.tbPersona?.nombres || '',
-          apellidoPaterno: rowData.tbPersona?.apellidoPaterno || '',
-          apellidoMaterno: rowData.tbPersona?.apellidoMaterno || '',
-          email: rowData.tbPersona?.email || '',
-          telefono: rowData.tbPersona?.telefono || '',
-          estado: rowData.estado || '',
-          fechaInscripcion: rowData.fechaInscripcion || '',
-          nota: rowData.nota || null
-        }
-      };
+      // Mostrar mensaje de carga
+      this.showMessage('Generando certificado...', 'info');
 
-      await this._certificateGenerator.generateCertificateFromParticipant(exportData);
+      // Llamar al servicio para generar y descargar el certificado
+      await this._tbCertificateService.downloadCertificate(
+        rowData.tbEvento.id,
+        rowData.tbPersona.id,
+        rowData
+      );
 
       this.showMessage('Certificado generado y descargado exitosamente', 'success');
 
-      // const dataStr = JSON.stringify(exportData, null, 2);
-      // const dataBlob = new Blob([dataStr], { type: 'application/json' });
-      // const url = URL.createObjectURL(dataBlob);
-      //
-      // const link = document.createElement('a');
-      // link.href = url;
-      // link.download = `participante_${rowData.tbPersona?.dni}_${this.data.evento.codigo}_${new Date().toISOString().split('T')[0]}.json`;
-      // document.body.appendChild(link);
-      // link.click();
-      // document.body.removeChild(link);
-      // URL.revokeObjectURL(url);
-      //
-      // this.showMessage('Datos del participante descargados exitosamente', 'success');
-    } catch (error) {
-      console.error('Error al descargar:', error);
-      this.showMessage('Error al descargar los datos', 'error');
+    } catch (error: any) {
+      console.error('Error al generar certificado:', error);
+
+      // Manejar diferentes tipos de errores
+      let errorMessage = 'Error al generar el certificado';
+
+      if (error.status === 400) {
+        errorMessage = 'No se pudo generar el certificado: datos del participante inválidos';
+      } else if (error.status === 404) {
+        errorMessage = 'No se encontró el formato de certificado para este evento';
+      } else if (error.status === 500) {
+        errorMessage = 'Error interno del servidor al generar el certificado';
+      } else if (error.error && error.error.message) {
+        errorMessage = error.error.message;
+      }
+
+      this.showMessage(errorMessage, 'error');
     }
   }
 
