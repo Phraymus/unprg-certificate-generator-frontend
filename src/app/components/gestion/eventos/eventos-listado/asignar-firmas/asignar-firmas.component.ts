@@ -14,7 +14,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 interface DialogData {
   evento: TbEvento;
-  firmasYaAsignadas?: TbFirma[];
+  firmaIdsYaAsignadas?: number[]; // IDs de firmas ya asignadas
 }
 
 // Cell Renderer para mostrar imagen en miniatura
@@ -112,7 +112,7 @@ export class AsignarFirmasComponent implements OnInit {
   evento: TbEvento;
   rowData: TbFirma[] = [];
   selectedFirmas: TbFirma[] = [];
-  firmasYaAsignadas: TbFirma[] = [];
+  firmaIdsYaAsignadas: number[] = [];
   isLoading = false;
   gridApi!: GridApi;
 
@@ -160,7 +160,7 @@ export class AsignarFirmasComponent implements OnInit {
 
   gridOptions: GridOptions = {
     pagination: true,
-    paginationPageSize: 10,
+    paginationPageSize: 20,
     rowSelection: 'multiple',
     suppressRowClickSelection: true,
     rowMultiSelectWithClick: false,
@@ -178,7 +178,8 @@ export class AsignarFirmasComponent implements OnInit {
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: DialogData) {
     this.evento = data.evento;
-    this.firmasYaAsignadas = data.firmasYaAsignadas || [];
+    this.firmaIdsYaAsignadas = data.firmaIdsYaAsignadas || [];
+    console.log('IDs de firmas ya asignadas:', this.firmaIdsYaAsignadas);
   }
 
   ngOnInit() {
@@ -222,17 +223,26 @@ export class AsignarFirmasComponent implements OnInit {
     this.gridApi = event.api;
 
     // Pre-seleccionar firmas ya asignadas si existen
-    if (this.firmasYaAsignadas.length > 0) {
+    if (this.firmaIdsYaAsignadas.length > 0) {
+      console.log('Pre-seleccionando firmas con IDs:', this.firmaIdsYaAsignadas);
+
       setTimeout(() => {
         this.gridApi.forEachNode((node) => {
-          const isAssigned = this.firmasYaAsignadas.some(
-            f => f.id === node.data.id
-          );
-          if (isAssigned) {
-            node.setSelected(true);
+          if (node.data && node.data.id) {
+            const isAssigned = this.firmaIdsYaAsignadas.includes(node.data.id);
+            if (isAssigned) {
+              console.log('Seleccionando firma:', node.data.codigo, node.data.id);
+              node.setSelected(true);
+            }
           }
         });
-      }, 100);
+
+        // Actualizar contador después de pre-seleccionar
+        setTimeout(() => {
+          this.selectedFirmas = this.gridApi.getSelectedRows();
+          console.log('Firmas pre-seleccionadas:', this.selectedFirmas.length);
+        }, 100);
+      }, 200);
     }
   }
 

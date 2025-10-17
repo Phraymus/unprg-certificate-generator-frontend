@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { AgGridAngularCustomComponent } from "~shared/components/ag-grid-angular-custom/ag-grid-angular-custom.component";
 import { MatCard, MatCardContent, MatCardHeader, MatCardTitle } from "@angular/material/card";
 import { ColDef } from "ag-grid-community";
-import { TbEventoService } from "app/services";
+import { TbEventoService, TbEventoFormatoCertificadoFirmaService } from "app/services";
 import { TbEvento } from "~shared/interfaces";
 import { MatDialog } from "@angular/material/dialog";
 import { EventosRegistroComponent } from "app/components/gestion/eventos/eventos-registro/eventos-registro.component";
@@ -27,6 +27,7 @@ import {
 })
 export class EventosListadoComponent implements OnInit {
   private _tbEventoService: TbEventoService = inject(TbEventoService);
+  private _tbEventoFormatoCertificadoFirmaService: TbEventoFormatoCertificadoFirmaService = inject(TbEventoFormatoCertificadoFirmaService);
   private _matDialog: MatDialog = inject(MatDialog);
   private _snackBar: MatSnackBar = inject(MatSnackBar);
 
@@ -339,20 +340,58 @@ export class EventosListadoComponent implements OnInit {
   }
 
   asignarFirmas(evento: TbEvento) {
-    const dialogRef = this._matDialog.open(AsignarFirmasComponent, {
-      width: '90vw',
-      maxWidth: '1200px',
-      maxHeight: '90vh',
-      data: { evento },
-      disableClose: true,
-      panelClass: 'custom-dialog-container'
-    });
+    // Mostrar loading mientras se cargan las firmas ya asignadas
+    this.showMessage('Cargando firmas asignadas...', 'info');
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result?.success) {
-        const count = result.count || 0;
-        this.showMessage(`${count} firma(s) asignada(s) al evento exitosamente`, 'success');
-      }
-    });
+    // Primero obtener los IDs de las firmas ya asignadas
+    this._tbEventoFormatoCertificadoFirmaService
+      .findFirmaIdsByEventoId(evento.id!)
+      .subscribe({
+        next: (firmaIdsAsignadas) => {
+          console.log('Firmas ya asignadas:', firmaIdsAsignadas);
+
+          // Abrir el modal con los IDs de firmas pre-seleccionadas
+          const dialogRef = this._matDialog.open(AsignarFirmasComponent, {
+            width: '90vw',
+            maxWidth: '1200px',
+            maxHeight: '90vh',
+            data: {
+              evento,
+              firmaIdsYaAsignadas: firmaIdsAsignadas // Pasar IDs de firmas ya asignadas
+            },
+            disableClose: true,
+            panelClass: 'custom-dialog-container'
+          });
+
+          dialogRef.afterClosed().subscribe(result => {
+            if (result?.success) {
+              const count = result.count || 0;
+              this.showMessage(`${count} firma(s) asignada(s) al evento exitosamente`, 'success');
+            }
+          });
+        },
+        error: (error) => {
+          console.error('Error al cargar firmas asignadas:', error);
+          // Si falla, abrir el modal sin pre-selección
+          const dialogRef = this._matDialog.open(AsignarFirmasComponent, {
+            width: '90vw',
+            maxWidth: '1200px',
+            maxHeight: '90vh',
+            data: {
+              evento,
+              firmaIdsYaAsignadas: []
+            },
+            disableClose: true,
+            panelClass: 'custom-dialog-container'
+          });
+
+          dialogRef.afterClosed().subscribe(result => {
+            if (result?.success) {
+              const count = result.count || 0;
+              this.showMessage(`${count} firma(s) asignada(s) al evento exitosamente`, 'success');
+            }
+          });
+        }
+      });
   }
 }
