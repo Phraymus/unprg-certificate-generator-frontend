@@ -15,6 +15,8 @@
       [rowData]="rowData"
       [columnDefs]="colDefs"
       [showActions]="true"
+      [showDownloadButton]="false"
+      [menuOptions]="menuOptions"
       [showAddButton]="true"
       addButtonText="Agregar Evento"
       addButtonClass="m-r-8 bg-primary"
@@ -27,7 +29,9 @@
       (onView)="onView($event)"
       (onDownload)="onDownload($event)"
       (onDelete)="onDelete($event)"
-      (gridReady)="onGridReady($event)">
+      (gridReady)="onGridReady($event)"
+      (onMenuAction)="handleMenuAction($event)"
+    >
     </app-ag-grid-angular-custom>
   </mat-card-content>
 </mat-card>

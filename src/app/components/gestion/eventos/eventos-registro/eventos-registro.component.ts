@@ -479,23 +479,4 @@ export class EventosRegistroComponent implements OnInit {
     }
     return 'Sin formato asignado';
   }
-
-  onParticipantes(evento: any) {
-    evento = {}
-    evento = this.data.evento;
-    const dialogRef = this._matDialog.open(ParticipantesListadoComponent, {
-      width: '95vw',
-      maxWidth: '1400px',
-      height: '83vh',
-      maxHeight: '90vh',
-      data: {evento},
-      disableClose: false,
-      panelClass: 'custom-dialog-container'
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('Modal de participantes cerrado');
-      // Aquí puedes realizar alguna acción después de cerrar el modal si es necesario
-    });
-  }
 }

@@ -3,8 +3,8 @@ import { ColDef, GridApi, GridOptions } from 'ag-grid-community';
 import { AgGridAngular } from 'ag-grid-angular';
 import { MatButton } from '@angular/material/button';
 import { AG_GRID_LOCALE_ES } from '@ag-grid-community/locale';
-import { ActionButtonsComponent } from "~shared/classes/ActionButtonsComponent";
-import {NgIf} from "@angular/common";
+import { ActionButtonsComponent, MenuOption } from "~shared/classes/ActionButtonsComponent";
+import { NgIf } from "@angular/common";
 
 @Component({
   selector: 'app-ag-grid-angular-custom',
@@ -31,7 +31,13 @@ export class AgGridAngularCustomComponent {
   @Input() gridHeight: string = '60vh';
   @Input() paginationPageSize: number = 20;
   @Input() rowHeight: number = 70;
-  @Input() parentComponent: any = null; // Para pasar el contexto de los botones de acción
+
+  // Configuración de botones de acción
+  @Input() showEditButton: boolean = true;
+  @Input() showViewButton: boolean = true;
+  @Input() showDownloadButton: boolean = true;
+  @Input() showDeleteButton: boolean = true;
+  @Input() menuOptions: MenuOption[] = []; // Opciones del menú de 3 puntos
 
   // Outputs para eventos
   @Output() onAdd = new EventEmitter<void>();
@@ -39,6 +45,7 @@ export class AgGridAngularCustomComponent {
   @Output() onView = new EventEmitter<any>();
   @Output() onDownload = new EventEmitter<any>();
   @Output() onDelete = new EventEmitter<any>();
+  @Output() onMenuAction = new EventEmitter<{action: string, data: any}>();
   @Output() gridReady = new EventEmitter<any>();
 
   gridApi: GridApi;
@@ -76,7 +83,8 @@ export class AgGridAngularCustomComponent {
           onEdit: (data: any) => this.onEdit.emit(data),
           onView: (data: any) => this.onView.emit(data),
           onDownload: (data: any) => this.onDownload.emit(data),
-          onDelete: (data: any) => this.onDelete.emit(data)
+          onDelete: (data: any) => this.onDelete.emit(data),
+          onMenuAction: (action: string, data: any) => this.onMenuAction.emit({action, data})
         }
       }
     };
@@ -90,6 +98,13 @@ export class AgGridAngularCustomComponent {
       const actionsColumn: ColDef = {
         headerName: "Acciones",
         cellRenderer: ActionButtonsComponent,
+        cellRendererParams: {
+          showEdit: this.showEditButton,
+          showView: this.showViewButton,
+          showDownload: this.showDownloadButton,
+          showDelete: this.showDeleteButton,
+          menuOptions: this.menuOptions
+        },
         sortable: false,
         filter: false,
         resizable: false,
@@ -103,6 +118,8 @@ export class AgGridAngularCustomComponent {
       const existingActionsIndex = this.internalColDefs.findIndex(col => col.headerName === "Acciones");
       if (existingActionsIndex === -1) {
         this.internalColDefs.push(actionsColumn);
+      } else {
+        this.internalColDefs[existingActionsIndex] = actionsColumn;
       }
     }
   }

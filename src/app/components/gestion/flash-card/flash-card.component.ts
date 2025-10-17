@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { ColDef } from 'ag-grid-community';
 import {AgGridAngularCustomComponent} from "~shared/components/ag-grid-angular-custom/ag-grid-angular-custom.component";
 import {MatCard, MatCardContent, MatCardHeader, MatCardTitle} from "@angular/material/card";
+import {MenuOption} from "~shared/classes/ActionButtonsComponent";
 
 @Component({
   selector: 'app-flash-card',
@@ -41,6 +42,27 @@ export class FlashCardComponent {
     { field: "price", headerName: "Precio", valueFormatter: (params) => `$${params.value?.toLocaleString()}` },
     { field: "electric", headerName: "Eléctrico", cellRenderer: (params) => params.value ? 'Sí' : 'No' }
     // La columna de acciones se agrega automáticamente por el componente personalizado
+  ];
+
+  menuOptions: MenuOption[] = [
+    {
+      icon: 'description',
+      label: 'Emitir documento',
+      action: 'emitir',
+      color: '#FFA726' // Naranja
+    },
+    {
+      icon: 'content_copy',
+      label: 'Copiar y Generar RO',
+      action: 'copiar_ro',
+      color: '#000000'
+    },
+    {
+      icon: 'delete',
+      label: 'Eliminar',
+      action: 'eliminar',
+      color: '#EF5350' // Rojo
+    }
   ];
 
   // Eventos del grid

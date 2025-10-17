@@ -7,6 +7,10 @@ import { TbEvento } from "~shared/interfaces";
 import { MatDialog } from "@angular/material/dialog";
 import { EventosRegistroComponent } from "app/components/gestion/eventos/eventos-registro/eventos-registro.component";
 import { MatSnackBar } from '@angular/material/snack-bar';
+import {MenuOption} from "~shared/classes/ActionButtonsComponent";
+import {
+  ParticipantesListadoComponent
+} from "app/components/gestion/eventos/eventos-registro/participantes/participantes-listado/participantes-listado.component";
 
 @Component({
   selector: 'app-eventos-listado',
@@ -105,6 +109,13 @@ export class EventosListadoComponent implements OnInit {
         }
       }
     }
+  ];
+  menuOptions: MenuOption[] = [
+    {
+      icon: 'visibility',
+      label: 'Ver participantes',
+      action: 'verParticipantes',
+    },
   ];
 
   ngOnInit(): void {
@@ -294,5 +305,26 @@ export class EventosListadoComponent implements OnInit {
 
   public exportarEventos() {
     this.exportGridData();
+  }
+
+  handleMenuAction($event: { action: string; data: any }) {
+    if ($event.action === 'verParticipantes') {
+      this.verParticipantes($event.data);
+    }
+  }
+
+  verParticipantes(evento: any) {
+    const dialogRef = this._matDialog.open(ParticipantesListadoComponent, {
+      width: '95vw',
+      maxWidth: '1400px',
+      data: {evento},
+      disableClose: false,
+      panelClass: 'custom-dialog-container'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('Modal de participantes cerrado');
+      // Aquí puedes realizar alguna acción después de cerrar el modal si es necesario
+    });
   }
 }

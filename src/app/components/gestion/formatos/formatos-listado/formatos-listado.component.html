@@ -15,6 +15,7 @@
       [rowData]="rowData"
       [columnDefs]="colDefs"
       [showActions]="true"
+      [showDownloadButton]="true"
       [showAddButton]="true"
       addButtonText="Agregar Formato"
       addButtonClass="m-r-8 bg-primary"
@@ -30,16 +31,17 @@
       (gridReady)="onGridReady($event)">
     </app-ag-grid-angular-custom>
 
-    <!-- Botón adicional para exportar -->
-    <div class="d-flex justify-content-end mt-3">
-      <button
-        mat-stroked-button
-        color="accent"
-        (click)="exportarFormatos()"
-        class="me-2">
-        <mat-icon>download</mat-icon>
-        Exportar Lista
-      </button>
-    </div>
+
+    <!--    &lt;!&ndash; Botón adicional para exportar &ndash;&gt;-->
+<!--    <div class="d-flex justify-content-end mt-3">-->
+<!--      <button-->
+<!--        mat-stroked-button-->
+<!--        color="accent"-->
+<!--        (click)="exportarFormatos()"-->
+<!--        class="me-2">-->
+<!--        <mat-icon>download</mat-icon>-->
+<!--        Exportar Lista-->
+<!--      </button>-->
+<!--    </div>-->
   </mat-card-content>
 </mat-card>
