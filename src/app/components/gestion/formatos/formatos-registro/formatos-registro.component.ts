@@ -214,7 +214,10 @@ export class FormatosRegistroComponent implements OnInit {
       const formatoData: TbFormatoCertificado = {
         codigo: formData.codigo,
         nombreFormato: formData.nombreFormato,
-        idtbUsuario: formData.idtbUsuario
+        idtbUsuario: formData.idtbUsuario,
+        tbUsuario: {
+          id: formData.idtbUsuario
+        }
       };
 
       if (this.isEditMode) {

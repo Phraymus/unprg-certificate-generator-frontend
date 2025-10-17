@@ -1,13 +1,14 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { AgGridAngularCustomComponent } from "~shared/components/ag-grid-angular-custom/ag-grid-angular-custom.component";
-import { MatCard, MatCardContent, MatCardHeader, MatCardTitle } from "@angular/material/card";
-import { ColDef } from "ag-grid-community";
-import { TbFormatoCertificadoService } from "app/services";
-import { TbFormatoCertificado } from "~shared/interfaces";
-import { MatDialog } from "@angular/material/dialog";
-import { MatSnackBar } from '@angular/material/snack-bar';
+import {Component, inject, OnInit} from '@angular/core';
+import {AgGridAngularCustomComponent} from "~shared/components/ag-grid-angular-custom/ag-grid-angular-custom.component";
+import {MatCard, MatCardContent, MatCardHeader, MatCardTitle} from "@angular/material/card";
+import {ColDef} from "ag-grid-community";
+import {TbFormatoCertificadoService} from "app/services";
+import {TbFormatoCertificado} from "~shared/interfaces";
+import {MatDialog} from "@angular/material/dialog";
+import {MatSnackBar} from '@angular/material/snack-bar';
 import {FormatosRegistroComponent} from "app/components/gestion/formatos/formatos-registro/formatos-registro.component";
 import {MatIcon} from "@angular/material/icon";
+import {MenuOption} from "~shared/classes/ActionButtonsComponent";
 
 @Component({
   selector: 'app-formato-listado',
@@ -30,8 +31,8 @@ export class FormatosListadoComponent implements OnInit {
   rowData: TbFormatoCertificado[] = [];
 
   colDefs: ColDef[] = [
-    { field: "codigo", headerName: "Código", width: 120 },
-    { field: "nombreFormato", headerName: "Nombre del Formato", flex: 1, minWidth: 200 },
+    {field: "codigo", headerName: "Código", width: 120},
+    {field: "nombreFormato", headerName: "Nombre del Formato", flex: 1, minWidth: 200},
     {
       field: "rutaFormato",
       headerName: "Archivo",
@@ -49,28 +50,33 @@ export class FormatosListadoComponent implements OnInit {
       headerName: "Creado por",
       width: 130
     },
-    {
-      field: "fechaCreacion",
-      headerName: "Fecha Creación",
-      width: 140,
-      valueFormatter: (params) => {
-        if (params.value) {
-          return new Date(params.value).toLocaleDateString();
-        }
-        return '';
-      }
-    },
-    {
-      field: "tamanoArchivo",
-      headerName: "Tamaño",
-      width: 100,
-      valueFormatter: (params) => {
-        if (params.value) {
-          return this.formatFileSize(params.value);
-        }
-        return '';
-      }
-    }
+    // {
+    //   field: "fechaCreacion",
+    //   headerName: "Fecha Creación",
+    //   width: 140,
+    //   valueFormatter: (params) => {
+    //     if (params.value) {
+    //       return new Date(params.value).toLocaleDateString();
+    //     }
+    //     return '';
+    //   }
+    // },
+    // {
+    //   field: "tamanoArchivo",
+    //   headerName: "Tamaño",
+    //   width: 100,
+    //   valueFormatter: (params) => {
+    //     if (params.value) {
+    //       return this.formatFileSize(params.value);
+    //     }
+    //     return '';
+    //   }
+    // }
+  ];
+
+  menuOptions: MenuOption[] = [
+    {label: 'Descargar plantilla', icon: 'download', action: "downloadTemplate"},
+    {label: 'Ver diccionario de datos', icon: 'book', action: "dataDictionary"},
   ];
 
   ngOnInit(): void {
@@ -259,7 +265,7 @@ export class FormatosListadoComponent implements OnInit {
         ...csvData.map(row => headers.map(header => `"${row[header as keyof typeof row] || ''}"`).join(','))
       ].join('\n');
 
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -271,6 +277,20 @@ export class FormatosListadoComponent implements OnInit {
     } catch (error) {
       console.error('Error al exportar:', error);
       this.showMessage('Error al exportar los datos', 'error');
+    }
+  }
+
+  onMenuAction($event: { action: string; data: any }) {
+    switch ($event.action) {
+      case 'downloadTemplate':
+        this.onDownload($event.data);
+        break;
+      case 'asignSignatures':
+        // Aquí puedes implementar la lógica para asignar firmas
+        this.showMessage('Funcionalidad de asignar firmas no implementada aún', 'info');
+        break;
+      default:
+        console.warn('Acción de menú no reconocida:', $event.action);
     }
   }
 }

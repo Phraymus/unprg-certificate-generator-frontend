@@ -7,10 +7,11 @@ import { TbEvento } from "~shared/interfaces";
 import { MatDialog } from "@angular/material/dialog";
 import { EventosRegistroComponent } from "app/components/gestion/eventos/eventos-registro/eventos-registro.component";
 import { MatSnackBar } from '@angular/material/snack-bar';
-import {MenuOption} from "~shared/classes/ActionButtonsComponent";
+import { MenuOption } from "~shared/classes/ActionButtonsComponent";
+import { ParticipantesListadoComponent } from "app/components/gestion/eventos/eventos-registro/participantes/participantes-listado/participantes-listado.component";
 import {
-  ParticipantesListadoComponent
-} from "app/components/gestion/eventos/eventos-registro/participantes/participantes-listado/participantes-listado.component";
+  AsignarFirmasComponent
+} from "app/components/gestion/eventos/eventos-listado/asignar-firmas/asignar-firmas.component";
 
 @Component({
   selector: 'app-eventos-listado',
@@ -110,11 +111,17 @@ export class EventosListadoComponent implements OnInit {
       }
     }
   ];
+
   menuOptions: MenuOption[] = [
     {
       icon: 'visibility',
       label: 'Ver participantes',
       action: 'verParticipantes',
+    },
+    {
+      label: 'Asignar firmas',
+      icon: 'edit',
+      action: "asignSignatures"
     },
   ];
 
@@ -134,12 +141,10 @@ export class EventosListadoComponent implements OnInit {
     });
   }
 
-  // Eventos del grid
   onGridReady(event: any) {
     console.log('Grid listo:', event);
   }
 
-  // Eventos de los botones
   onAdd() {
     const data = {
       action: 'Registrar' as const,
@@ -261,7 +266,6 @@ export class EventosListadoComponent implements OnInit {
     }
   }
 
-  // Métodos auxiliares
   private showMessage(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
     const config = {
       duration: 3000,
@@ -308,8 +312,15 @@ export class EventosListadoComponent implements OnInit {
   }
 
   handleMenuAction($event: { action: string; data: any }) {
-    if ($event.action === 'verParticipantes') {
-      this.verParticipantes($event.data);
+    switch ($event.action) {
+      case 'verParticipantes':
+        this.verParticipantes($event.data);
+        break;
+      case 'asignSignatures':
+        this.asignarFirmas($event.data);
+        break;
+      default:
+        this.showMessage(`Acción desconocida: ${$event.action}`);
     }
   }
 
@@ -317,14 +328,31 @@ export class EventosListadoComponent implements OnInit {
     const dialogRef = this._matDialog.open(ParticipantesListadoComponent, {
       width: '95vw',
       maxWidth: '1400px',
-      data: {evento},
+      data: { evento },
       disableClose: false,
       panelClass: 'custom-dialog-container'
     });
 
     dialogRef.afterClosed().subscribe(result => {
       console.log('Modal de participantes cerrado');
-      // Aquí puedes realizar alguna acción después de cerrar el modal si es necesario
+    });
+  }
+
+  asignarFirmas(evento: TbEvento) {
+    const dialogRef = this._matDialog.open(AsignarFirmasComponent, {
+      width: '90vw',
+      maxWidth: '1200px',
+      maxHeight: '90vh',
+      data: { evento },
+      disableClose: true,
+      panelClass: 'custom-dialog-container'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result?.success) {
+        const count = result.count || 0;
+        this.showMessage(`${count} firma(s) asignada(s) al evento exitosamente`, 'success');
+      }
     });
   }
 }

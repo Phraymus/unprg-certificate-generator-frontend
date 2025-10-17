@@ -15,8 +15,9 @@
       [rowData]="rowData"
       [columnDefs]="colDefs"
       [showActions]="true"
-      [showDownloadButton]="true"
+      [showDownloadButton]="false"
       [showAddButton]="true"
+      [menuOptions]="menuOptions"
       addButtonText="Agregar Formato"
       addButtonClass="m-r-8 bg-primary"
       searchPlaceholder="Buscar formatos..."
@@ -28,7 +29,9 @@
       (onView)="onView($event)"
       (onDownload)="onDownload($event)"
       (onDelete)="onDelete($event)"
-      (gridReady)="onGridReady($event)">
+      (gridReady)="onGridReady($event)"
+      (onMenuAction)="onMenuAction($event)"
+    >
     </app-ag-grid-angular-custom>
 
 
