@@ -186,7 +186,7 @@ export class ParticipantesRegistroComponent implements OnInit {
       const participanteData: TbParticipante = {
         tbEvento: this.data.evento,
         tbPersona: this.personaExistente ? this.personaExistenteDto : personaData,
-        estado: stringAEnumParticipante(formData.estado),
+        estado: formData.estado,
         fechaInscripcion: formData.fechaInscripcion ?
           new Date(formData.fechaInscripcion).toISOString().split('T')[0] :
           new Date().toISOString().split('T')[0],

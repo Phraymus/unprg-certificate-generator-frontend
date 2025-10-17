@@ -1,0 +1,263 @@
+<div class="formulario-participante-container">
+  <!-- Loading State -->
+  <div *ngIf="isLoadingEvento" class="loading-container">
+    <mat-spinner diameter="60"></mat-spinner>
+    <p class="loading-text">Cargando información del evento...</p>
+  </div>
+
+  <!-- Evento no encontrado -->
+  <div *ngIf="eventoNotFound && !isLoadingEvento" class="error-container">
+    <mat-card class="error-card">
+      <mat-card-content class="text-center">
+        <mat-icon class="error-icon">event_busy</mat-icon>
+        <h2>Evento no encontrado</h2>
+        <p>Lo sentimos, no pudimos encontrar el evento solicitado.</p>
+        <button mat-raised-button color="primary" (click)="volverInicio()">
+          <mat-icon>home</mat-icon>
+          Volver al inicio
+        </button>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Formulario de inscripción -->
+  <div *ngIf="!isLoadingEvento && !eventoNotFound" class="formulario-content">
+    <mat-card class="formulario-card">
+      <mat-card-header>
+        <mat-card-title>
+          <div class="header-content">
+            <mat-icon class="header-icon">how_to_reg</mat-icon>
+            <div class="header-text">
+              <h1>Formulario de Inscripción</h1>
+              <p class="subtitle">Complete sus datos para inscribirse al evento</p>
+            </div>
+          </div>
+        </mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <!-- Información del Evento -->
+        <div class="evento-info-banner" *ngIf="evento">
+          <div class="evento-banner-content">
+            <div class="evento-icon-wrapper">
+              <mat-icon class="evento-icon-large">event</mat-icon>
+            </div>
+            <div class="evento-details">
+              <h2 class="evento-nombre">{{ evento.nombre }}</h2>
+              <div class="evento-meta">
+                <span class="evento-meta-item">
+                  <mat-icon>tag</mat-icon>
+                  {{ evento.codigo }}
+                </span>
+                <span class="evento-meta-item" *ngIf="evento.fechaInicio">
+                  <mat-icon>calendar_today</mat-icon>
+                  {{ formatFecha(evento.fechaInicio) }}
+                </span>
+                <span class="evento-meta-item" *ngIf="evento.fechaFin">
+                  <mat-icon>event</mat-icon>
+                  {{ formatFecha(evento.fechaFin) }}
+                </span>
+              </div>
+              <p class="evento-descripcion" *ngIf="evento.nombre">
+                {{ evento.nombre }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mensaje de éxito -->
+        <div *ngIf="registroExitoso" class="success-message">
+          <mat-icon class="success-icon">check_circle</mat-icon>
+          <h3>¡Inscripción Exitosa!</h3>
+          <p>Su inscripción ha sido registrada correctamente.</p>
+          <p class="success-detail">
+            Recibirá un correo de confirmación en <strong>{{ f['email'].value }}</strong>
+          </p>
+          <p class="success-note">
+            Su inscripción está en estado <strong>PENDIENTE</strong> y será revisada por el administrador.
+          </p>
+        </div>
+
+        <!-- Formulario -->
+        <form [formGroup]="participanteForm" (ngSubmit)="onSubmit()" *ngIf="!registroExitoso">
+
+          <!-- Sección: Datos Personales -->
+          <div class="form-section">
+            <div class="section-header">
+              <mat-icon>person</mat-icon>
+              <h3>Datos Personales</h3>
+            </div>
+
+            <div class="form-grid">
+              <!-- DNI -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>DNI</mat-label>
+                <input matInput
+                       formControlName="dni"
+                       placeholder="12345678"
+                       maxlength="8"
+                       type="text"
+                       pattern="[0-9]*">
+                <mat-icon matPrefix>badge</mat-icon>
+                <mat-hint>Ingrese su DNI de 8 dígitos</mat-hint>
+                <mat-error *ngIf="f['dni'].touched && f['dni'].errors">
+                  {{ getErrorMessage('dni') }}
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Nombres -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Nombres</mat-label>
+                <input matInput
+                       formControlName="nombres"
+                       placeholder="Juan Carlos">
+                <mat-icon matPrefix>person</mat-icon>
+                <mat-error *ngIf="f['nombres'].touched && f['nombres'].errors">
+                  {{ getErrorMessage('nombres') }}
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Apellido Paterno -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Apellido Paterno</mat-label>
+                <input matInput
+                       formControlName="apellidoPaterno"
+                       placeholder="García">
+                <mat-icon matPrefix>person</mat-icon>
+                <mat-error *ngIf="f['apellidoPaterno'].touched && f['apellidoPaterno'].errors">
+                  {{ getErrorMessage('apellidoPaterno') }}
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Apellido Materno -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Apellido Materno (Opcional)</mat-label>
+                <input matInput
+                       formControlName="apellidoMaterno"
+                       placeholder="López">
+                <mat-icon matPrefix>person</mat-icon>
+                <mat-error *ngIf="f['apellidoMaterno'].touched && f['apellidoMaterno'].errors">
+                  {{ getErrorMessage('apellidoMaterno') }}
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Sección: Datos de Contacto -->
+          <div class="form-section">
+            <div class="section-header">
+              <mat-icon>contact_mail</mat-icon>
+              <h3>Datos de Contacto</h3>
+            </div>
+
+            <div class="form-grid">
+              <!-- Email -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Correo Electrónico</mat-label>
+                <input matInput
+                       type="email"
+                       formControlName="email"
+                       placeholder="ejemplo@correo.com">
+                <mat-icon matPrefix>email</mat-icon>
+                <mat-hint>Recibirá la confirmación en este correo</mat-hint>
+                <mat-error *ngIf="f['email'].touched && f['email'].errors">
+                  {{ getErrorMessage('email') }}
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Teléfono -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Teléfono</mat-label>
+                <input matInput
+                       formControlName="telefono"
+                       placeholder="987654321"
+                       maxlength="9"
+                       type="text"
+                       pattern="[0-9]*">
+                <mat-icon matPrefix>phone</mat-icon>
+                <mat-hint>Número de contacto de 9 dígitos</mat-hint>
+                <mat-error *ngIf="f['telefono'].touched && f['telefono'].errors">
+                  {{ getErrorMessage('telefono') }}
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Términos y Condiciones -->
+          <div class="form-section">
+            <div class="terminos-container">
+              <mat-checkbox formControlName="aceptaTerminos" color="primary">
+                <span class="terminos-text">
+                  Acepto los <a href="/terminos" target="_blank">términos y condiciones</a>
+                  y la <a href="/privacidad" target="_blank">política de privacidad</a>
+                </span>
+              </mat-checkbox>
+              <mat-error *ngIf="f['aceptaTerminos'].touched && f['aceptaTerminos'].errors" class="terminos-error">
+                {{ getErrorMessage('aceptaTerminos') }}
+              </mat-error>
+            </div>
+          </div>
+
+          <!-- Información importante -->
+          <div class="info-card">
+            <mat-icon class="info-icon">info</mat-icon>
+            <div class="info-content">
+              <h4>Información Importante</h4>
+              <ul>
+                <li>Su inscripción quedará en estado <strong>PENDIENTE</strong> hasta ser aprobada por el administrador.</li>
+                <li>Recibirá un correo de confirmación cuando su inscripción sea procesada.</li>
+                <li>Asegúrese de que todos los datos sean correctos antes de enviar.</li>
+                <li>Una vez aprobada su inscripción, podrá descargar su certificado de participación.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Botones de acción -->
+          <div class="form-actions">
+            <button mat-stroked-button
+                    type="button"
+                    (click)="onReset()"
+                    [disabled]="isLoading"
+                    class="btn-reset">
+              <mat-icon>refresh</mat-icon>
+              Limpiar formulario
+            </button>
+
+            <button mat-raised-button
+                    color="primary"
+                    type="submit"
+                    [disabled]="participanteForm.invalid || isLoading"
+                    class="btn-submit">
+              <mat-icon *ngIf="!isLoading">send</mat-icon>
+              <mat-spinner *ngIf="isLoading" diameter="20" class="spinner-inline"></mat-spinner>
+              {{ isLoading ? 'Enviando...' : 'Enviar Inscripción' }}
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Card de ayuda -->
+    <mat-card class="ayuda-card">
+      <mat-card-content>
+        <div class="ayuda-content">
+          <mat-icon class="ayuda-icon">help_outline</mat-icon>
+          <div class="ayuda-text">
+            <h4>¿Necesita ayuda?</h4>
+            <p>Si tiene problemas con su inscripción, puede contactarnos:</p>
+            <div class="contacto-info">
+              <a href="mailto:soporte@unprg.edu.pe" class="contacto-link">
+                <mat-icon>email</mat-icon>
+                mail
+              </a>
+              <a href="tel:+51074283800" class="contacto-link">
+                <mat-icon>phone</mat-icon>
+                (074) 283800
+              </a>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

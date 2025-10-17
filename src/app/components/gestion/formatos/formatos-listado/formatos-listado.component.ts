@@ -18,7 +18,6 @@ import {MenuOption} from "~shared/classes/ActionButtonsComponent";
     MatCardContent,
     MatCardHeader,
     MatCardTitle,
-    MatIcon
   ],
   templateUrl: './formatos-listado.component.html',
   styleUrl: './formatos-listado.component.scss'
