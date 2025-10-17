@@ -81,7 +81,9 @@ export class FirmasRegistroComponent implements OnInit {
     this.firmaForm = this._formBuilder.group({
       codigo: ['', [Validators.required, Validators.minLength(3)]],
       nombre: ['', [Validators.required, Validators.minLength(3)]],
-      estado: ['1', [Validators.required]] // Default: 1 = Activo
+      estado: ['1', [Validators.required]], // Default: 1 = Activo
+      cargo: [''], // Campo opcional
+      entidad: [''] // Campo opcional
     });
   }
 
@@ -91,7 +93,9 @@ export class FirmasRegistroComponent implements OnInit {
       this.firmaForm.patchValue({
         codigo: firma.codigo,
         nombre: firma.nombre,
-        estado: firma.estado || '1' // Convertir a string para el select
+        estado: firma.estado || '1', // Convertir a string para el select
+        cargo: firma.cargo || '',
+        entidad: firma.entidad || ''
       });
 
       // Cargar imagen existente si hay
@@ -253,7 +257,9 @@ export class FirmasRegistroComponent implements OnInit {
       const firmaData: TbFirma = {
         codigo: formData.codigo,
         nombre: formData.nombre,
-        estado: formData.estado // Ya viene como "1" o "0" del select
+        estado: formData.estado, // Ya viene como "1" o "0" del select
+        cargo: formData.cargo || undefined, // Enviar undefined si está vacío
+        entidad: formData.entidad || undefined // Enviar undefined si está vacío
       };
 
       // Manejar la imagen
@@ -386,7 +392,9 @@ export class FirmasRegistroComponent implements OnInit {
     const labels: { [key: string]: string } = {
       codigo: 'Código',
       nombre: 'Nombre',
-      estado: 'Estado'
+      estado: 'Estado',
+      cargo: 'Cargo',
+      entidad: 'Entidad'
     };
     return labels[fieldName] || fieldName;
   }

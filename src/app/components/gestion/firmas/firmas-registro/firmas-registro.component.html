@@ -63,6 +63,26 @@
         </div>
       </div>
 
+      <div class="row">
+        <div class="col-md-6">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Cargo</mat-label>
+            <input matInput formControlName="cargo" placeholder="Ej: Director Académico"
+                   [readonly]="isReadOnlyMode">
+            <mat-hint>Cargo de la persona (opcional)</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="col-md-6">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Entidad</mat-label>
+            <input matInput formControlName="entidad" placeholder="Ej: Universidad Nacional"
+                   [readonly]="isReadOnlyMode">
+            <mat-hint>Entidad o institución (opcional)</mat-hint>
+          </mat-form-field>
+        </div>
+      </div>
+
       <!-- Sección: Imagen de la Firma -->
       <div class="section-header mt-4">
         <h3 class="section-title">
