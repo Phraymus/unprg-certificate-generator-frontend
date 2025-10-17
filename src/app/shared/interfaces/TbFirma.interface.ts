@@ -3,5 +3,5 @@ export interface TbFirma {
   codigo?: string;
   nombre?: string;
   estado?: string;
-  imagen?: any;
+  imagen?: number[] | ArrayBuffer | string | null;
 }

@@ -1,4 +1,4 @@
-export { TbFirmaServiceService } from './tbFirmaService.service';
+export { TbFirmaService } from './tbFirmaService.service';
 export { TbCertificadoService } from './tbCertificadoService.service';
 export { TbEventoService } from './tbEventoService.service';
 export { TbEventoFormatoCertificadoService } from './tbEventoFormatoCertificadoService.service';
