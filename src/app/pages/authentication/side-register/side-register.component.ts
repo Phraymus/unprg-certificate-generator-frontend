@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { CoreService } from 'src/app/services/core.service';
+import { CoreService } from 'app/services/core.service';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { MaterialModule } from 'src/app/material.module';
+import { MaterialModule } from 'app/material.module';
 
 @Component({
   selector: 'app-side-register',

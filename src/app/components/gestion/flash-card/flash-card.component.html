@@ -1,23 +1,101 @@
-<div class="row">
-  <div class="col-sm-12 col-md-6 mt-3">
-    <input #buscador type="text" placeholder="Buscar..." class="form-control form-control-sm">
-  </div>
-  <div class="col-sm-12 col-md-6 mt-3 text-end">
-    <button mat-flat-button #agregar type="button" class="m-r-8 bg-warning">Nuevo</button>
-  </div>
-</div>
-<div class="row">
-  <div class="col-12 pt-3">
-    <ag-grid-angular
-      style="height: 500px; width: 100%;"
+<mat-card class="cardWithShadow theme-card">
+  <mat-card-header>
+    <mat-card-title class="m-b-0">
+      <span
+        class="iconify me-2"
+        [attr.data-icon]="'solar:users-group-two-rounded-outline'"
+        data-inline="false"
+        style="font-size: 28px;">
+      </span>
+      Usuario
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content class="b-t-1">
+    <app-ag-grid-angular-custom
       [rowData]="rowData"
       [columnDefs]="colDefs"
-      [pagination]="true"
-      [paginationAutoPageSize]="true"
-      [animateRows]="true"
-      [gridOptions]="gridOptions"
-    >
-    </ag-grid-angular>
-  </div>
-</div>
+      [showActions]="true"
+      [showAddButton]="true"
+      addButtonText="Agregar"
+      addButtonClass="m-r-8 bg-warning"
+      searchPlaceholder="Buscar..."
+      gridHeight="60vh"
+      [paginationPageSize]="20"
+      [rowHeight]="50"
+      [menuOptions]="menuOptions"
+      (onAdd)="onAdd()"
+      (onEdit)="onEdit($event)"
+      (onView)="onView($event)"
+      (onDownload)="onDownload($event)"
+      (onDelete)="onDelete($event)"
+      (gridReady)="onGridReady($event)">
+    </app-ag-grid-angular-custom>
+  </mat-card-content>
+</mat-card>
 
+
+
+
+<!--&lt;!&ndash; Ejemplo 1: Configuración completa con todos los botones &ndash;&gt;-->
+<!--<app-ag-grid-angular-custom-->
+<!--  title="Gestión de Usuarios"-->
+<!--  titleIcon="solar:users-group-two-rounded-outline"-->
+<!--  [rowData]="usuarios"-->
+<!--  [columnDefs]="usuariosColDefs"-->
+<!--  [showActions]="true"-->
+<!--  [showAddButton]="true"-->
+<!--  addButtonText="Nuevo Usuario"-->
+<!--  addButtonClass="m-r-8 bg-primary"-->
+<!--  searchPlaceholder="Buscar usuarios..."-->
+<!--  gridHeight="70vh"-->
+<!--  [paginationPageSize]="25"-->
+<!--  [rowHeight]="60"-->
+<!--  (onAdd)="crearUsuario()"-->
+<!--  (onEdit)="editarUsuario($event)"-->
+<!--  (onView)="verUsuario($event)"-->
+<!--  (onDownload)="descargarUsuario($event)"-->
+<!--  (onDelete)="eliminarUsuario($event)">-->
+<!--</app-ag-grid-angular-custom>-->
+
+<!--&lt;!&ndash; Ejemplo 2: Solo lectura, sin botones de acción &ndash;&gt;-->
+<!--<app-ag-grid-angular-custom-->
+<!--  title="Reporte de Ventas"-->
+<!--  titleIcon="solar:chart-outline"-->
+<!--  [rowData]="ventas"-->
+<!--  [columnDefs]="ventasColDefs"-->
+<!--  [showActions]="false"-->
+<!--  [showAddButton]="false"-->
+<!--  searchPlaceholder="Filtrar ventas..."-->
+<!--  gridHeight="50vh"-->
+<!--  [paginationPageSize]="50">-->
+<!--</app-ag-grid-angular-custom>-->
+
+<!--&lt;!&ndash; Ejemplo 3: Con botón personalizado pero sin columna de acciones &ndash;&gt;-->
+<!--<app-ag-grid-angular-custom-->
+<!--  title="Lista de Productos"-->
+<!--  titleIcon="solar:box-outline"-->
+<!--  [rowData]="productos"-->
+<!--  [columnDefs]="productosColDefs"-->
+<!--  [showActions]="false"-->
+<!--  [showAddButton]="true"-->
+<!--  addButtonText="Importar Productos"-->
+<!--  addButtonClass="m-r-8 bg-success"-->
+<!--  searchPlaceholder="Buscar productos..."-->
+<!--  (onAdd)="importarProductos()">-->
+<!--</app-ag-grid-angular-custom>-->
+
+<!--&lt;!&ndash; Ejemplo 4: Con acciones pero sin botón agregar &ndash;&gt;-->
+<!--<app-ag-grid-angular-custom-->
+<!--  title="Logs del Sistema"-->
+<!--  titleIcon="solar:document-text-outline"-->
+<!--  [rowData]="logs"-->
+<!--  [columnDefs]="logsColDefs"-->
+<!--  [showActions]="true"-->
+<!--  [showAddButton]="false"-->
+<!--  searchPlaceholder="Filtrar logs..."-->
+<!--  gridHeight="80vh"-->
+<!--  [paginationPageSize]="100"-->
+<!--  [rowHeight]="40"-->
+<!--  (onView)="verDetalleLog($event)"-->
+<!--  (onDownload)="descargarLog($event)">-->
+<!--</app-ag-grid-angular-custom>-->

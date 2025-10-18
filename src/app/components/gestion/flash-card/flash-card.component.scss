@@ -1,0 +1,18 @@
+// En tu archivo de estilos globales o en el componente
+.ag-theme-alpine .ag-cell {
+  display: flex;
+  align-items: center;
+
+  &.ag-cell-focus {
+    border: none !important;
+  }
+}
+
+// Para que los botones se vean mejor centrados
+.action-buttons-container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}

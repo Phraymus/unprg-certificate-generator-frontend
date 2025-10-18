@@ -1,0 +1,227 @@
+<mat-card class="cardWithShadow theme-card">
+  <mat-card-header>
+    <mat-card-title class="m-b-0">
+      <span
+        class="iconify me-2"
+        [attr.data-icon]="'solar:document-text-outline'"
+        data-inline="false"
+        style="font-size: 28px;">
+      </span>
+      Formato de Certificado
+      <span style="font-size: 0.875em !important;" class="pt-2 ps-1">{{ data.action }}</span>
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content class="b-t-1">
+    <form [formGroup]="formatoForm" (ngSubmit)="onSubmit()" class="formato-form">
+
+      <!-- Sección: Información General -->
+      <div class="section-header">
+        <h3 class="section-title">
+          <mat-icon>info</mat-icon>
+          Información General
+        </h3>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Código</mat-label>
+            <input matInput formControlName="codigo"
+                   placeholder="Ej: CERT-001"
+                   [readonly]="isReadOnlyMode"
+                   maxlength="20">
+            <mat-error *ngIf="f['codigo'].touched && f['codigo'].errors && !isReadOnlyMode">
+              {{ getErrorMessage('codigo') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="col-md-6">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Usuario Responsable</mat-label>
+            <mat-select formControlName="idtbUsuario" [disabled]="isReadOnlyMode">
+              <mat-option value="">Seleccione un usuario</mat-option>
+              <mat-option *ngFor="let usuario of usuarios" [value]="usuario.id">
+                {{ usuario.usuario }} - {{ usuario.tbPersona?.nombres }} {{ usuario.tbPersona?.apellidoPaterno }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="f['idtbUsuario'].touched && f['idtbUsuario'].errors && !isReadOnlyMode">
+              {{ getErrorMessage('idtbUsuario') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Nombre del Formato</mat-label>
+            <input matInput formControlName="nombreFormato"
+                   placeholder="Ej: Certificado de Participación - Evento 2024"
+                   [readonly]="isReadOnlyMode"
+                   maxlength="100">
+            <mat-error *ngIf="f['nombreFormato'].touched && f['nombreFormato'].errors && !isReadOnlyMode">
+              {{ getErrorMessage('nombreFormato') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Sección: Archivo del Formato -->
+      <div class="section-header mt-4">
+        <h3 class="section-title">
+          <mat-icon>upload_file</mat-icon>
+          Archivo del Formato
+        </h3>
+      </div>
+
+      <!-- Zona de carga de archivos -->
+      <div class="file-upload-section" *ngIf="!isReadOnlyMode">
+        <div class="file-drop-zone"
+             (drop)="onFileDropped($event)"
+             (dragover)="onDragOver($event)"
+             (dragleave)="onDragLeave($event)"
+             [class.has-file]="selectedFile">
+<!--             [class.drag-over]="isDragOver">-->
+
+          <!-- Input oculto para archivos -->
+          <input #fileInput
+                 type="file"
+                 [accept]="acceptedFileTypes"
+                 (change)="onFileSelected($event)"
+                 style="display: none;">
+
+          <!-- Vista cuando no hay archivo seleccionado -->
+          <div class="upload-prompt" *ngIf="!selectedFile && !filePreview">
+            <mat-icon class="upload-icon">cloud_upload</mat-icon>
+            <p class="upload-text">
+              Arrastra tu archivo Word aquí o
+              <button type="button" mat-button color="primary" (click)="triggerFileInput()">
+                selecciona un archivo
+              </button>
+            </p>
+            <p class="upload-hint">
+              Formatos soportados: .doc, .docx (máximo {{ maxFileSize / (1024 * 1024) }}MB)
+            </p>
+          </div>
+
+          <!-- Vista cuando hay archivo seleccionado o existente -->
+          <div class="file-preview" *ngIf="selectedFile || filePreview">
+            <div class="file-info">
+              <mat-icon class="file-icon">{{ getFileIcon() }}</mat-icon>
+              <div class="file-details">
+                <span class="file-name">
+                  {{ selectedFile ? selectedFile.name : filePreview }}
+                </span>
+                <span class="file-size" *ngIf="selectedFile">
+                  {{ getFileSize() }}
+                </span>
+                <span class="file-status" *ngIf="!selectedFile && filePreview">
+                  Archivo existente
+                </span>
+              </div>
+            </div>
+
+            <div class="file-actions">
+              <button type="button"
+                      mat-icon-button
+                      color="primary"
+                      (click)="triggerFileInput()"
+                      matTooltip="Cambiar archivo">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button type="button"
+                      mat-icon-button
+                      color="warn"
+                      (click)="removeFile()"
+                      matTooltip="Quitar archivo"
+                      *ngIf="selectedFile">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barra de progreso (si es necesaria) -->
+        <mat-progress-bar mode="determinate"
+                          [value]="uploadProgress"
+                          *ngIf="isLoading && uploadProgress > 0">
+        </mat-progress-bar>
+      </div>
+
+      <!-- Vista de solo lectura del archivo -->
+      <div class="file-readonly-section" *ngIf="isReadOnlyMode">
+        <div class="readonly-file-info" *ngIf="data.formato?.rutaFormato">
+          <mat-icon class="file-icon">description</mat-icon>
+          <div class="file-details">
+            <span class="file-name">{{ data.formato.rutaFormato.split('/').pop() }}</span>
+            <span class="file-status">Archivo del formato</span>
+          </div>
+          <button type="button"
+                  mat-stroked-button
+                  color="primary"
+                  (click)="downloadCurrentFile()"
+                  class="download-btn">
+            <mat-icon>download</mat-icon>
+            Descargar
+          </button>
+        </div>
+
+        <div class="no-file-info" *ngIf="!data.formato?.rutaFormato">
+          <mat-icon class="no-file-icon">info</mat-icon>
+          <span>No hay archivo asociado a este formato</span>
+        </div>
+      </div>
+
+      <!-- Sección: Descripción adicional -->
+      <div class="section-header mt-4">
+        <h3 class="section-title">
+          <mat-icon>notes</mat-icon>
+          Información Adicional
+        </h3>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Descripción o Notas</mat-label>
+            <textarea matInput
+                      formControlName="descripcion"
+                      rows="3"
+                      placeholder="Descripción adicional del formato (opcional)"
+                      [readonly]="isReadOnlyMode"
+                      maxlength="500">
+            </textarea>
+            <mat-hint>{{ f['descripcion'].value?.length || 0 }}/500</mat-hint>
+          </mat-form-field>
+        </div>
+      </div>
+
+    </form>
+  </mat-card-content>
+
+  <mat-card-footer class="p-3">
+    <div class="d-flex justify-content-end gap-2">
+      <button mat-stroked-button
+              type="button"
+              (click)="onCancel()"
+              [disabled]="isLoading">
+        <mat-icon>close</mat-icon>
+        {{ isReadOnlyMode ? 'Cerrar' : 'Cancelar' }}
+      </button>
+
+      <button mat-flat-button
+              color="primary"
+              type="submit"
+              (click)="onSubmit()"
+              [disabled]="formatoForm.invalid || isLoading || isReadOnlyMode"
+              class="ms-2"
+              *ngIf="!isReadOnlyMode">
+        <mat-icon *ngIf="!isLoading">{{ isEditMode ? 'edit' : 'save' }}</mat-icon>
+        <mat-icon *ngIf="isLoading" class="spinning">sync</mat-icon>
+        {{ isLoading ? 'Guardando...' : (isEditMode ? 'Actualizar' : 'Guardar') }}
+      </button>
+    </div>
+  </mat-card-footer>
+</mat-card>

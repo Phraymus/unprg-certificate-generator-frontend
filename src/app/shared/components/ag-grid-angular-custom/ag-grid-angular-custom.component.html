@@ -1,1 +1,34 @@
-<p>ag-grid-angular-custom works!</p>
+<div class="row">
+  <div class="col-sm-12 col-md-6 mt-3">
+    <input
+      #buscador
+      (input)="onChangeFilter($event)"
+      type="text"
+      [placeholder]="searchPlaceholder"
+      class="form-control form-control-sm">
+  </div>
+
+  <div class="col-sm-12 col-md-6 mt-3 text-end" *ngIf="showAddButton">
+    <button
+      mat-flat-button
+      #agregar
+      type="button"
+      [class]="addButtonClass"
+      (click)="onAddClick()">
+      {{ addButtonText }}
+    </button>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-12 pt-3">
+    <ag-grid-angular
+      [style.height]="gridHeight"
+      style="width: 100%;"
+      [rowData]="rowData"
+      [columnDefs]="internalColDefs"
+      [gridOptions]="gridOptions"
+      (gridReady)="onGridReady($event)">
+    </ag-grid-angular>
+  </div>
+</div>

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CoreService } from 'src/app/services/core.service';
+import { CoreService } from 'app/services/core.service';
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -8,7 +8,8 @@ import { RouterModule } from '@angular/router';
   template: `
     <a [routerLink]="['/']">
       <img
-        src="./assets/images/logos/logo.svg"
+        width="212px"
+        src="./assets/images/logos/isotipo_unprg.png"
         class="align-middle m-2"
         alt="logo"
       />
@@ -17,5 +18,5 @@ import { RouterModule } from '@angular/router';
 })
 export class BrandingComponent {
   options = this.settings.getOptions();
-  constructor(private settings: CoreService) {} 
+  constructor(private settings: CoreService) {}
 }

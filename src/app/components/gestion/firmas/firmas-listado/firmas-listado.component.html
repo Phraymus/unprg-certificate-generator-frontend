@@ -1,0 +1,33 @@
+<mat-card class="cardWithShadow theme-card">
+  <mat-card-header>
+    <mat-card-title class="m-b-0">
+      <span
+        class="iconify me-2"
+        [attr.data-icon]="'solar:pen-new-square-outline'"
+        data-inline="false"
+        style="font-size: 28px;">
+      </span>
+      Firmas
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content class="b-t-1">
+    <app-ag-grid-angular-custom
+      [rowData]="rowData"
+      [columnDefs]="colDefs"
+      [showActions]="true"
+      [showAddButton]="true"
+      addButtonText="Agregar Firma"
+      addButtonClass="m-r-8 bg-primary"
+      searchPlaceholder="Buscar..."
+      gridHeight="60vh"
+      [paginationPageSize]="20"
+      [rowHeight]="80"
+      [showDownloadButton]="false"
+      (onAdd)="onAdd()"
+      (onEdit)="onEdit($event)"
+      (onView)="onView($event)"
+      (onDelete)="onDelete($event)"
+      (gridReady)="onGridReady($event)">
+    </app-ag-grid-angular-custom>
+  </mat-card-content>
+</mat-card>

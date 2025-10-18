@@ -12,7 +12,7 @@ import { NavService } from '../../../../services/nav.service';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { TablerIconsModule } from 'angular-tabler-icons';
-import { MaterialModule } from 'src/app/material.module';
+import { MaterialModule } from 'app/material.module';
 import { CommonModule } from '@angular/common';
 
 @Component({

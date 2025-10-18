@@ -1,6 +1,11 @@
 import { Routes } from '@angular/router';
 import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
+import { BrandingComponent } from "app/layouts/branding/branding.component";
+import { FormularioParticipanteComponent } from './pages/formulario-participante/formulario-participante.component';
+import {
+  InscripcionExitosaComponent
+} from "app/pages/formulario-participante/inscripcion-exitosa/inscripcion-exitosa.component";
 
 export const routes: Routes = [
   {
@@ -35,6 +40,27 @@ export const routes: Routes = [
           import('./pages/extra/extra.routes').then((m) => m.ExtraRoutes),
       },
     ],
+  },
+  {
+    path: 'branding',
+    component: BrandingComponent,
+  },
+  // Rutas públicas para inscripción de participantes
+  {
+    path: 'inscripcion',
+    component: BlankComponent,
+    children: [
+      {
+        path: 'evento/:id',
+        component: FormularioParticipanteComponent,
+        title: 'Inscripción al Evento'
+      },
+      {
+        path: 'exitosa',
+        component: InscripcionExitosaComponent,
+        title: 'Inscripción Exitosa'
+      }
+    ]
   },
   {
     path: '',

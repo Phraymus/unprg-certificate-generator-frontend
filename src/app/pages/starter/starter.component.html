@@ -1,24 +1,244 @@
-<div class="row">
-  <div class="col-lg-8">
-    <app-sales-profit></app-sales-profit>
-  </div>
-  <div class="col-lg-4">
-    <div class="row">
-      <div class="col-12">
-        <app-total-followers></app-total-followers>
-      </div>
-      <div class="col-12">
-        <app-total-income></app-total-income>
+<div class="dashboard-container">
+  <!-- Header Section -->
+  <div class="row m-b-24">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h2 class="f-s-24 f-w-600 m-b-8">Dashboard de Certificados</h2>
+          <p class="text-muted m-b-0">Resumen general del sistema de generación de certificados</p>
+        </div>
+        <button mat-raised-button color="primary" class="d-flex align-items-center gap-8">
+          <i-tabler name="refresh" class="icon-18"></i-tabler>
+          <span>Actualizar</span>
+        </button>
       </div>
     </div>
   </div>
-  <div class="col-lg-8">
-    <app-popular-products></app-popular-products>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="row">
+    <div class="col-12 text-center p-y-48">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p class="m-t-16 text-muted">Cargando datos del dashboard...</p>
+    </div>
   </div>
-  <div class="col-lg-4">
-    <app-earning-reports></app-earning-reports>
-  </div>
-  <div class="col-12">
-    <app-blog-card></app-blog-card>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!loading">
+    <!-- Statistics Cards -->
+    <div class="row">
+      <div class="col-lg-3 col-md-6" *ngFor="let card of statsCards">
+        <mat-card class="cardWithShadow stat-card stat-card-{{ card.color }}">
+          <mat-card-content>
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <p class="text-muted f-s-14 m-b-8 f-w-500">{{ card.title }}</p>
+                <h3 class="f-s-36 f-w-700 m-b-0">{{ card.value }}</h3>
+              </div>
+              <div class="stat-icon bg-light-{{ card.color }} rounded-circle-shape p-x-20 p-y-12 d-flex align-items-center justify-content-center">
+                <i class="iconify f-s-36 text-{{ card.color }}" [attr.data-icon]="card.icon"></i>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Recent Events & Participants Section -->
+    <div class="row m-t-24">
+      <!-- Recent Events -->
+      <div class="col-lg-7">
+        <mat-card class="cardWithShadow">
+          <mat-card-content>
+            <div class="d-flex justify-content-between align-items-center m-b-20">
+              <mat-card-title class="m-b-0 f-s-18">Eventos Recientes</mat-card-title>
+              <button mat-icon-button [matMenuTriggerFor]="eventMenu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #eventMenu="matMenu" xPosition="before">
+                <a href="/gestion/eventos" class="d-flex align-items-center text-decoration-none p-y-10 p-x-16 gap-8">
+                  <span>Ver todos los eventos</span>
+                </a>
+              </mat-menu>
+            </div>
+
+            <div *ngIf="recentEvents.length === 0" class="text-center p-y-32">
+              <i class="iconify f-s-48 text-muted" data-icon="solar:calendar-bold-duotone"></i>
+              <p class="text-muted m-t-16">No hay eventos registrados</p>
+            </div>
+
+            <div *ngIf="recentEvents.length > 0" class="events-list">
+              <div *ngFor="let event of recentEvents; let last = last"
+                   class="event-item p-y-16"
+                   [class.b-b-1]="!last"
+                   (click)="navigateToEventDetails(event.id)"
+                   style="cursor: pointer;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div class="d-flex align-items-center flex-grow-1">
+                    <div class="event-icon bg-light-primary rounded-circle-shape p-x-12 p-y-12 m-r-16 d-flex align-items-center justify-content-center">
+                      <i class="iconify f-s-24 text-primary" data-icon="solar:calendar-bold-duotone"></i>
+                    </div>
+                    <div>
+                      <h6 class="f-s-15 f-w-600 m-b-4">{{ event.nombre }}</h6>
+                      <div class="d-flex align-items-center gap-12">
+                        <span class="f-s-12 text-muted d-flex align-items-center gap-4">
+                          <i class="iconify" data-icon="solar:tag-horizontal-linear"></i>
+                          {{ event.codigo }}
+                        </span>
+                        <span class="f-s-12 text-muted d-flex align-items-center gap-4">
+                          <i class="iconify" data-icon="solar:calendar-linear"></i>
+                          {{ event.fecha }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <span class="bg-light-success text-success f-s-13 f-w-600 p-x-12 p-y-6 rounded-pill d-inline-flex align-items-center gap-4">
+                      <i class="iconify f-s-16" data-icon="solar:users-group-rounded-bold-duotone"></i>
+                      {{ event.participantes }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Quick Stats / Info Card -->
+      <div class="col-lg-5">
+        <mat-card class="cardWithShadow h-100">
+          <mat-card-content>
+            <mat-card-title class="m-b-20 f-s-18">Información del Sistema</mat-card-title>
+
+            <div class="info-list">
+              <div class="info-item d-flex align-items-center justify-content-between p-y-16 b-b-1">
+                <div class="d-flex align-items-center">
+                  <span class="bg-light-primary text-primary rounded-circle-shape p-x-14 p-y-10 m-r-16 d-flex align-items-center justify-content-center">
+                    <i class="iconify f-s-20" data-icon="solar:document-text-bold-duotone"></i>
+                  </span>
+                  <div>
+                    <h6 class="f-s-14 f-w-600 m-b-2">Certificados Generados</h6>
+                    <p class="f-s-12 text-muted m-b-0">Total de certificados</p>
+                  </div>
+                </div>
+                <h5 class="f-s-20 f-w-700 text-primary m-b-0">{{ stats.totalCertificados }}</h5>
+              </div>
+
+              <div class="info-item d-flex align-items-center justify-content-between p-y-16 b-b-1">
+                <div class="d-flex align-items-center">
+                  <span class="bg-light-success text-success rounded-circle-shape p-x-14 p-y-10 m-r-16 d-flex align-items-center justify-content-center">
+                    <i class="iconify f-s-20" data-icon="solar:users-group-rounded-bold-duotone"></i>
+                  </span>
+                  <div>
+                    <h6 class="f-s-14 f-w-600 m-b-2">Participantes Activos</h6>
+                    <p class="f-s-12 text-muted m-b-0">Registrados en el sistema</p>
+                  </div>
+                </div>
+                <h5 class="f-s-20 f-w-700 text-success m-b-0">{{ stats.totalParticipantes }}</h5>
+              </div>
+
+              <div class="info-item d-flex align-items-center justify-content-between p-y-16 b-b-1">
+                <div class="d-flex align-items-center">
+                  <span class="bg-light-warning text-warning rounded-circle-shape p-x-14 p-y-10 m-r-16 d-flex align-items-center justify-content-center">
+                    <i class="iconify f-s-20" data-icon="solar:calendar-bold-duotone"></i>
+                  </span>
+                  <div>
+                    <h6 class="f-s-14 f-w-600 m-b-2">Eventos Totales</h6>
+                    <p class="f-s-12 text-muted m-b-0">Eventos registrados</p>
+                  </div>
+                </div>
+                <h5 class="f-s-20 f-w-700 text-warning m-b-0">{{ stats.totalEventos }}</h5>
+              </div>
+
+              <div class="info-item d-flex align-items-center justify-content-between p-y-16">
+                <div class="d-flex align-items-center">
+                  <span class="bg-light-error text-error rounded-circle-shape p-x-14 p-y-10 m-r-16 d-flex align-items-center justify-content-center">
+                    <i class="iconify f-s-20" data-icon="solar:document-bold-duotone"></i>
+                  </span>
+                  <div>
+                    <h6 class="f-s-14 f-w-600 m-b-2">Formatos Disponibles</h6>
+                    <p class="f-s-12 text-muted m-b-0">Plantillas de certificados</p>
+                  </div>
+                </div>
+                <h5 class="f-s-20 f-w-700 text-error m-b-0">{{ stats.totalFormatos }}</h5>
+              </div>
+            </div>
+
+            <div class="m-t-24">
+              <button mat-raised-button color="primary" class="w-100">
+                Ver Reportes Completos
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Recent Participants Table -->
+    <div class="row m-t-24">
+      <div class="col-12">
+        <mat-card class="cardWithShadow">
+          <mat-card-content>
+            <div class="d-flex justify-content-between align-items-center m-b-20">
+              <mat-card-title class="m-b-0 f-s-18">Participantes Recientes</mat-card-title>
+              <button mat-icon-button [matMenuTriggerFor]="participantMenu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #participantMenu="matMenu" xPosition="before">
+                <a href="/gestion/eventos" class="d-flex align-items-center text-decoration-none p-y-10 p-x-16 gap-8">
+                  <span>Registrar participantes</span>
+                </a>
+              </mat-menu>
+            </div>
+
+            <div *ngIf="recentParticipants.length === 0" class="text-center p-y-32">
+              <i class="iconify f-s-48 text-muted" data-icon="solar:users-group-rounded-bold-duotone"></i>
+              <p class="text-muted m-t-16">No hay participantes registrados</p>
+            </div>
+
+            <div *ngIf="recentParticipants.length > 0" class="table-responsive">
+              <table mat-table [dataSource]="recentParticipants" class="w-100">
+                <!-- Avatar & Name Column -->
+                <ng-container matColumnDef="participant">
+                  <th mat-header-cell *matHeaderCellDef class="f-s-14 f-w-600">Participante</th>
+                  <td mat-cell *matCellDef="let participant">
+                    <div class="d-flex align-items-center">
+                      <div class="participant-avatar bg-light-primary text-primary rounded-circle-shape p-x-12 p-y-12 m-r-12 d-flex align-items-center justify-content-center">
+                        <span class="f-s-14 f-w-600">{{ getInitials(participant.tbPersona?.nombre || '') }}</span>
+                      </div>
+                      <div>
+                        <h6 class="f-s-14 f-w-600 m-b-2">{{ participant.tbPersona?.nombres || 'N/A' }}</h6>
+                        <p class="f-s-12 text-muted m-b-0">{{ participant.tbPersona?.email || 'Sin email' }}</p>
+                      </div>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <!-- DNI Column -->
+                <ng-container matColumnDef="dni">
+                  <th mat-header-cell *matHeaderCellDef class="f-s-14 f-w-600">DNI</th>
+                  <td mat-cell *matCellDef="let participant">
+                    <span class="f-s-14">{{ participant.tbPersona?.dni || 'N/A' }}</span>
+                  </td>
+                </ng-container>
+
+                <!-- Event Column -->
+                <ng-container matColumnDef="event">
+                  <th mat-header-cell *matHeaderCellDef class="f-s-14 f-w-600">Evento</th>
+                  <td mat-cell *matCellDef="let participant">
+                    <span class="f-s-14">{{ participant.tbEvento?.nombre || 'N/A' }}</span>
+                  </td>
+                </ng-container>
+
+
+                <tr mat-header-row *matHeaderRowDef="['participant', 'dni', 'event']"></tr>
+                <tr mat-row *matRowDef="let row; columns: ['participant', 'dni', 'event']"></tr>
+              </table>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
   </div>
 </div>

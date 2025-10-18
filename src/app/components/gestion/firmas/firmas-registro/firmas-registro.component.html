@@ -1,0 +1,192 @@
+<mat-card class="cardWithShadow theme-card">
+  <mat-card-header>
+    <mat-card-title class="m-b-0">
+      <span
+        class="iconify me-2"
+        [attr.data-icon]="'solar:pen-new-square-outline'"
+        data-inline="false"
+        style="font-size: 28px;">
+      </span>
+      Firmas
+      <span style="font-size: 0.875em !important;" class="pt-2 ps-1">{{ data.action }}</span>
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content class="b-t-1">
+    <form [formGroup]="firmaForm" (ngSubmit)="onSubmit()" class="firma-form">
+
+      <!-- Sección: Datos de la Firma -->
+      <div class="section-header">
+        <h3 class="section-title">
+          <mat-icon>info</mat-icon>
+          Datos de la Firma
+        </h3>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Código</mat-label>
+            <input matInput formControlName="codigo" placeholder="Ej: FIRMA-001"
+                   [readonly]="isReadOnlyMode">
+            <mat-error *ngIf="f['codigo'].touched && f['codigo'].errors && !isReadOnlyMode">
+              {{ getErrorMessage('codigo') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="col-md-6">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Estado</mat-label>
+            <mat-select formControlName="estado" [disabled]="isReadOnlyMode">
+              <mat-option value="1">Activo</mat-option>
+              <mat-option value="0">Inactivo</mat-option>
+            </mat-select>
+            <mat-error *ngIf="f['estado'].touched && f['estado'].errors && !isReadOnlyMode">
+              {{ getErrorMessage('estado') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Nombre de la Persona</mat-label>
+            <input matInput formControlName="nombre" placeholder="Ej: Dr. Juan Pérez García"
+                   [readonly]="isReadOnlyMode">
+            <mat-hint>Nombre completo de la persona que firma</mat-hint>
+            <mat-error *ngIf="f['nombre'].touched && f['nombre'].errors && !isReadOnlyMode">
+              {{ getErrorMessage('nombre') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Cargo</mat-label>
+            <input matInput formControlName="cargo" placeholder="Ej: Director Académico"
+                   [readonly]="isReadOnlyMode">
+            <mat-hint>Cargo de la persona (opcional)</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="col-md-6">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Entidad</mat-label>
+            <input matInput formControlName="entidad" placeholder="Ej: Universidad Nacional"
+                   [readonly]="isReadOnlyMode">
+            <mat-hint>Entidad o institución (opcional)</mat-hint>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Sección: Imagen de la Firma -->
+      <div class="section-header mt-4">
+        <h3 class="section-title">
+          <mat-icon>image</mat-icon>
+          Imagen de la Firma
+          <span class="optional-badge">Opcional</span>
+        </h3>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <div class="upload-container">
+            <!-- Vista previa de la imagen -->
+            <div class="preview-section" *ngIf="imagePreview || (isEditMode && existingImageBase64)">
+              <div class="image-preview-wrapper">
+                <img [src]="imagePreview || ('data:image/png;base64,' + existingImageBase64)"
+                     alt="Preview de firma"
+                     class="image-preview">
+                <button
+                  mat-icon-button
+                  type="button"
+                  class="remove-image-btn"
+                  (click)="removeImage()"
+                  *ngIf="!isReadOnlyMode"
+                  matTooltip="Eliminar imagen">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <!-- Área de carga -->
+            <div class="upload-area" *ngIf="!imagePreview && !existingImageBase64 && !isReadOnlyMode">
+              <input
+                type="file"
+                #fileInput
+                (change)="onFileSelected($event)"
+                accept="image/png,image/jpeg,image/jpg"
+                style="display: none;">
+
+              <div class="upload-content" (click)="fileInput.click()">
+                <mat-icon class="upload-icon">cloud_upload</mat-icon>
+                <p class="upload-text">Haz clic para cargar una imagen</p>
+                <p class="upload-hint">PNG, JPG o JPEG (máx. 2MB)</p>
+              </div>
+            </div>
+
+            <!-- Botón para cambiar imagen en modo edición -->
+            <div class="change-image-section" *ngIf="(imagePreview || existingImageBase64) && !isReadOnlyMode">
+              <input
+                type="file"
+                #fileInput2
+                (change)="onFileSelected($event)"
+                accept="image/png,image/jpeg,image/jpg"
+                style="display: none;">
+
+              <button
+                mat-stroked-button
+                type="button"
+                (click)="fileInput2.click()"
+                class="change-image-btn">
+                <mat-icon>edit</mat-icon>
+                Cambiar imagen
+              </button>
+            </div>
+
+            <!-- Mensaje informativo si no hay imagen -->
+            <div class="no-image-info" *ngIf="!imagePreview && !existingImageBase64 && isReadOnlyMode">
+              <mat-icon>image_not_supported</mat-icon>
+              <p>No se ha cargado ninguna imagen</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información adicional sobre la imagen -->
+      <div class="row" *ngIf="selectedFileName">
+        <div class="col-md-12">
+          <div class="file-info">
+            <mat-icon class="info-icon">info</mat-icon>
+            <span>Archivo seleccionado: <strong>{{ selectedFileName }}</strong></span>
+            <span *ngIf="selectedFileSize"> ({{ selectedFileSize }})</span>
+          </div>
+        </div>
+      </div>
+
+    </form>
+  </mat-card-content>
+
+  <mat-card-footer class="p-3">
+    <div class="d-flex justify-content-end gap-2">
+      <button mat-stroked-button type="button" (click)="onCancel()" [disabled]="isLoading">
+        <mat-icon>close</mat-icon>
+        {{ isReadOnlyMode ? 'Cerrar' : 'Cancelar' }}
+      </button>
+
+      <button mat-flat-button color="primary" type="submit"
+              (click)="onSubmit()"
+              [disabled]="firmaForm.invalid || isLoading || isReadOnlyMode"
+              class="ms-2"
+              *ngIf="!isReadOnlyMode">
+        <mat-icon *ngIf="!isLoading">{{ isEditMode ? 'edit' : 'save' }}</mat-icon>
+        <mat-icon *ngIf="isLoading" class="spinning">sync</mat-icon>
+        {{ isLoading ? 'Guardando...' : (isEditMode ? 'Actualizar' : 'Guardar') }}
+      </button>
+    </div>
+  </mat-card-footer>
+</mat-card>
