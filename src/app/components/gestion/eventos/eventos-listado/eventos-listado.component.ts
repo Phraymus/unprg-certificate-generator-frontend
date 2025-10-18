@@ -1,14 +1,16 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { AgGridAngularCustomComponent } from "~shared/components/ag-grid-angular-custom/ag-grid-angular-custom.component";
-import { MatCard, MatCardContent, MatCardHeader, MatCardTitle } from "@angular/material/card";
-import { ColDef } from "ag-grid-community";
-import { TbEventoService, TbEventoFormatoCertificadoFirmaService } from "app/services";
-import { TbEvento } from "~shared/interfaces";
-import { MatDialog } from "@angular/material/dialog";
-import { EventosRegistroComponent } from "app/components/gestion/eventos/eventos-registro/eventos-registro.component";
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MenuOption } from "~shared/classes/ActionButtonsComponent";
-import { ParticipantesListadoComponent } from "app/components/gestion/eventos/eventos-registro/participantes/participantes-listado/participantes-listado.component";
+import {Component, inject, OnInit} from '@angular/core';
+import {AgGridAngularCustomComponent} from "~shared/components/ag-grid-angular-custom/ag-grid-angular-custom.component";
+import {MatCard, MatCardContent, MatCardHeader, MatCardTitle} from "@angular/material/card";
+import {ColDef} from "ag-grid-community";
+import {TbEventoService, TbEventoFormatoCertificadoFirmaService} from "app/services";
+import {TbEvento} from "~shared/interfaces";
+import {MatDialog} from "@angular/material/dialog";
+import {EventosRegistroComponent} from "app/components/gestion/eventos/eventos-registro/eventos-registro.component";
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {MenuOption} from "~shared/classes/ActionButtonsComponent";
+import {
+  ParticipantesListadoComponent
+} from "app/components/gestion/eventos/eventos-registro/participantes/participantes-listado/participantes-listado.component";
 import {
   AsignarFirmasComponent
 } from "app/components/gestion/eventos/eventos-listado/asignar-firmas/asignar-firmas.component";
@@ -34,8 +36,8 @@ export class EventosListadoComponent implements OnInit {
   rowData: TbEvento[] = [];
 
   colDefs: ColDef[] = [
-    { field: "codigo", headerName: "Código", width: 120 },
-    { field: "nombre", headerName: "Nombre del Evento", flex: 1 },
+    {field: "codigo", headerName: "Código", width: 120},
+    {field: "nombre", headerName: "Nombre del Evento", flex: 1},
     {
       field: "fechaInicio",
       headerName: "Fecha Inicio",
@@ -101,13 +103,13 @@ export class EventosListadoComponent implements OnInit {
         const estado = params.value;
         switch (estado) {
           case 'Próximo':
-            return { color: '#1976d2', fontWeight: 'bold' };
+            return {color: '#1976d2', fontWeight: 'bold'};
           case 'En curso':
-            return { color: '#388e3c', fontWeight: 'bold' };
+            return {color: '#388e3c', fontWeight: 'bold'};
           case 'Finalizado':
-            return { color: '#d32f2f', fontWeight: 'bold' };
+            return {color: '#d32f2f', fontWeight: 'bold'};
           default:
-            return { color: '#757575', fontStyle: 'italic' };
+            return {color: '#757575', fontStyle: 'italic'};
         }
       }
     }
@@ -123,6 +125,11 @@ export class EventosListadoComponent implements OnInit {
       label: 'Asignar firmas',
       icon: 'edit',
       action: "asignSignatures"
+    },
+    {
+      label: 'Generar enlace de registro',
+      icon: 'link',
+      action: "linkGenerate"
     },
   ];
 
@@ -230,7 +237,7 @@ export class EventosListadoComponent implements OnInit {
       };
 
       const dataStr = JSON.stringify(exportData, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const dataBlob = new Blob([dataStr], {type: 'application/json'});
       const url = URL.createObjectURL(dataBlob);
 
       const link = document.createElement('a');
@@ -293,7 +300,7 @@ export class EventosListadoComponent implements OnInit {
         ...csvData.map(row => headers.map(header => `"${row[header as keyof typeof row] || ''}"`).join(','))
       ].join('\n');
 
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -320,16 +327,108 @@ export class EventosListadoComponent implements OnInit {
       case 'asignSignatures':
         this.asignarFirmas($event.data);
         break;
+      case 'linkGenerate':
+        this.linkGenerate($event.data);
+        break;
       default:
         this.showMessage(`Acción desconocida: ${$event.action}`);
     }
+  }
+
+  /**
+   * Genera el enlace de inscripción pública para el evento y lo copia al portapapeles
+   */
+  linkGenerate(evento: TbEvento) {
+    try {
+      // Generar la URL completa del formulario público
+      const baseUrl = window.location.origin;
+      const registrationUrl = `${baseUrl}/inscripcion/evento/${evento.id}`;
+
+      // Copiar al portapapeles
+      navigator.clipboard.writeText(registrationUrl).then(() => {
+        // Éxito al copiar
+        this.showMessage('✓ Enlace copiado al portapapeles', 'success');
+
+        // Mostrar información adicional del enlace
+        this.showLinkInfoSnackbar(evento, registrationUrl);
+      }).catch(err => {
+        // Error al copiar - método alternativo
+        console.error('Error al copiar con clipboard API:', err);
+        this.copyToClipboardFallback(registrationUrl);
+        this.showMessage('✓ Enlace copiado al portapapeles', 'success');
+        this.showLinkInfoSnackbar(evento, registrationUrl);
+      });
+
+    } catch (error) {
+      console.error('Error al generar enlace:', error);
+      this.showMessage('Error al generar el enlace de inscripción', 'error');
+    }
+  }
+
+  /**
+   * Método alternativo para copiar al portapapeles (fallback para navegadores antiguos)
+   */
+  private copyToClipboardFallback(text: string): void {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      document.execCommand('copy');
+      textArea.remove();
+    } catch (err) {
+      console.error('Error en fallback de copia:', err);
+      textArea.remove();
+      throw err;
+    }
+  }
+
+  /**
+   * Muestra un snackbar con información del enlace generado
+   */
+  private showLinkInfoSnackbar(evento: TbEvento, url: string): void {
+    console.log('📋 Enlace de inscripción generado:');
+    console.log(`Evento: ${evento.nombre} (${evento.codigo})`);
+    console.log(`URL: ${url}`);
+
+    // Mostrar snackbar informativo con mayor duración
+    const snackBarRef = this._snackBar.open(
+      `Enlace de "${evento.nombre}" copiado al portapapeles`,
+      'Ver URL',
+      {
+        duration: 5000,
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        panelClass: ['snackbar-success']
+      }
+    );
+
+    // Si el usuario hace clic en "Ver URL", mostrar el enlace en consola y alert
+    snackBarRef.onAction().subscribe(() => {
+      const message = `Enlace de inscripción para "${evento.nombre}":\n\n${url}\n\nComparte este enlace con los participantes para que puedan inscribirse al evento.`;
+      alert(message);
+
+      // También loguear en consola para facilitar
+      console.log('═══════════════════════════════════════');
+      console.log('📋 ENLACE DE INSCRIPCIÓN');
+      console.log('═══════════════════════════════════════');
+      console.log(`🎯 Evento: ${evento.nombre}`);
+      console.log(`🔖 Código: ${evento.codigo}`);
+      console.log(`🔗 URL: ${url}`);
+      console.log('═══════════════════════════════════════');
+    });
   }
 
   verParticipantes(evento: any) {
     const dialogRef = this._matDialog.open(ParticipantesListadoComponent, {
       width: '95vw',
       maxWidth: '1400px',
-      data: { evento },
+      data: {evento},
       disableClose: false,
       panelClass: 'custom-dialog-container'
     });

@@ -16,6 +16,7 @@ import {
   stringAEnumParticipante,
   valueAStringParticipante
 } from "~shared/enums/EstadoParticipanteEnum";
+import {MenuOption} from "~shared/classes/ActionButtonsComponent";
 
 interface ParticipantesDialogData {
   evento: TbEvento;
@@ -115,6 +116,11 @@ export class ParticipantesListadoComponent implements OnInit {
         return '-';
       }
     }
+  ];
+
+  menuOptions: MenuOption[] = [
+    {label: 'Descargar Certificado en formato WORD', icon: 'download', action: "downloadWord"},
+    {label: 'Descargar Certificado en formato PDF', icon: 'picture_as_pdf', action: "downloadPdf"},
   ];
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: ParticipantesDialogData) {
@@ -223,7 +229,7 @@ export class ParticipantesListadoComponent implements OnInit {
   }
 
   async onDownload(rowData: TbParticipante) {
-    console.log('Generando certificado para:', rowData);
+    console.log('Generando certificado Word para:', rowData);
 
     if (!rowData.tbPersona?.id || !rowData.tbEvento?.id) {
       this.showMessage('Datos del participante incompletos', 'error');
@@ -232,22 +238,63 @@ export class ParticipantesListadoComponent implements OnInit {
 
     try {
       // Mostrar mensaje de carga
-      this.showMessage('Generando certificado...', 'info');
+      this.showMessage('Generando certificado Word...', 'info');
 
-      // Llamar al servicio para generar y descargar el certificado
+      // Llamar al servicio para generar y descargar el certificado Word
       await this._tbCertificateService.downloadCertificate(
         rowData.tbEvento.id,
         rowData.tbPersona.id,
         rowData
       );
 
-      this.showMessage('Certificado generado y descargado exitosamente', 'success');
+      this.showMessage('Certificado Word generado y descargado exitosamente', 'success');
 
     } catch (error: any) {
-      console.error('Error al generar certificado:', error);
+      console.error('Error al generar certificado Word:', error);
 
       // Manejar diferentes tipos de errores
-      let errorMessage = 'Error al generar el certificado';
+      let errorMessage = 'Error al generar el certificado Word';
+
+      if (error.status === 400) {
+        errorMessage = 'No se pudo generar el certificado: datos del participante inválidos';
+      } else if (error.status === 404) {
+        errorMessage = 'No se encontró el formato de certificado para este evento';
+      } else if (error.status === 500) {
+        errorMessage = 'Error interno del servidor al generar el certificado';
+      } else if (error.error && error.error.message) {
+        errorMessage = error.error.message;
+      }
+
+      this.showMessage(errorMessage, 'error');
+    }
+  }
+
+  async onDownloadPdf(rowData: TbParticipante) {
+    console.log('Generando certificado PDF para:', rowData);
+
+    if (!rowData.tbPersona?.id || !rowData.tbEvento?.id) {
+      this.showMessage('Datos del participante incompletos', 'error');
+      return;
+    }
+
+    try {
+      // Mostrar mensaje de carga
+      this.showMessage('Generando certificado PDF...', 'info');
+
+      // Llamar al servicio para generar y descargar el certificado PDF
+      await this._tbCertificateService.downloadCertificatePdf(
+        rowData.tbEvento.id,
+        rowData.tbPersona.id,
+        rowData
+      );
+
+      this.showMessage('Certificado PDF generado y descargado exitosamente', 'success');
+
+    } catch (error: any) {
+      console.error('Error al generar certificado PDF:', error);
+
+      // Manejar diferentes tipos de errores
+      let errorMessage = 'Error al generar el certificado PDF';
 
       if (error.status === 400) {
         errorMessage = 'No se pudo generar el certificado: datos del participante inválidos';
@@ -320,7 +367,7 @@ export class ParticipantesListadoComponent implements OnInit {
         ...csvData.map(row => headers.map(header => `"${row[header as keyof typeof row] || ''}"`).join(','))
       ].join('\n');
 
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -332,6 +379,17 @@ export class ParticipantesListadoComponent implements OnInit {
     } catch (error) {
       console.error('Error al exportar:', error);
       this.showMessage('Error al exportar los datos', 'error');
+    }
+  }
+
+  onMenuAction($event: { action: string; data: any }) {
+    switch ($event.action) {
+      case 'downloadWord':
+        this.onDownload($event.data);
+        break;
+      case 'downloadPdf':
+        this.onDownloadPdf($event.data);
+        break;
     }
   }
 }
