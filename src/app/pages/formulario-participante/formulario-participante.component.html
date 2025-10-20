@@ -183,6 +183,76 @@
             </div>
           </div>
 
+          <!-- Sección: Comprobante de Pago -->
+          <div class="form-section">
+            <div class="section-header">
+              <mat-icon>receipt</mat-icon>
+              <h3>Comprobante de Pago <span class="optional-text">(Opcional)</span></h3>
+            </div>
+
+            <div class="comprobante-upload-section">
+              <!-- Vista previa de la imagen -->
+              <div class="preview-section" *ngIf="imagePreview">
+                <div class="image-preview-wrapper">
+                  <img [src]="imagePreview"
+                       alt="Preview de comprobante"
+                       class="image-preview">
+                  <button
+                    mat-icon-button
+                    type="button"
+                    class="remove-image-btn"
+                    (click)="removeImage()"
+                    matTooltip="Eliminar imagen">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Área de carga -->
+              <div class="upload-area" *ngIf="!imagePreview">
+                <input
+                  type="file"
+                  #fileInput
+                  (change)="onFileSelected($event)"
+                  accept="image/png,image/jpeg,image/jpg"
+                  style="display: none;">
+
+                <div class="upload-content" (click)="fileInput.click()">
+                  <mat-icon class="upload-icon">cloud_upload</mat-icon>
+                  <p class="upload-text">Haz clic para cargar tu comprobante de pago</p>
+                  <p class="upload-hint">PNG, JPG o JPEG (máx. 5MB)</p>
+                  <p class="upload-note">Si realizaste algún pago, adjunta aquí tu comprobante</p>
+                </div>
+              </div>
+
+              <!-- Botón para cambiar imagen -->
+              <div class="change-image-section" *ngIf="imagePreview">
+                <input
+                  type="file"
+                  #fileInput2
+                  (change)="onFileSelected($event)"
+                  accept="image/png,image/jpeg,image/jpg"
+                  style="display: none;">
+
+                <button
+                  mat-stroked-button
+                  type="button"
+                  (click)="fileInput2.click()"
+                  class="change-image-btn">
+                  <mat-icon>edit</mat-icon>
+                  Cambiar comprobante
+                </button>
+              </div>
+
+              <!-- Información del archivo -->
+              <div class="file-info" *ngIf="selectedFileName">
+                <mat-icon class="info-icon">info</mat-icon>
+                <span>Archivo: <strong>{{ selectedFileName }}</strong></span>
+                <span *ngIf="selectedFileSize"> ({{ selectedFileSize }})</span>
+              </div>
+            </div>
+          </div>
+
           <!-- Términos y Condiciones -->
           <div class="form-section">
             <div class="terminos-container">
@@ -207,6 +277,7 @@
                 <li>Su inscripción quedará en estado <strong>PENDIENTE</strong> hasta ser aprobada por el administrador.</li>
                 <li>Recibirá un correo de confirmación cuando su inscripción sea procesada.</li>
                 <li>Asegúrese de que todos los datos sean correctos antes de enviar.</li>
+                <li>El comprobante de pago es opcional pero ayudará a agilizar su inscripción.</li>
                 <li>Una vez aprobada su inscripción, podrá descargar su certificado de participación.</li>
               </ul>
             </div>

@@ -9,4 +9,5 @@ export interface TbParticipante {
   estado?: string;
   fechaInscripcion?: string;
   nota?: number; // BigDecimal se mapea a number en TypeScript
+  comprobante? : number[] | ArrayBuffer | string | null;
 }
