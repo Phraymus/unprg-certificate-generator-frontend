@@ -1,5 +1,5 @@
 <mat-card class="cardWithShadow theme-card">
-  <mat-card-header>
+  <mat-card-header class="header-fixed">
     <mat-card-title class="m-b-0">
           <span
             class="iconify me-2"
@@ -138,6 +138,19 @@
       <div class="row">
         <div class="col-md-4">
           <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Tipo de participante</mat-label>
+            <mat-select formControlName="tipoParticipante" [disabled]="isReadOnlyMode">
+              @for ( tipoParticipante of tipoParticipantesDisponibles; track tipoParticipante.id) {
+                <mat-option [value]="tipoParticipante.id">{{tipoParticipante.nombre}} ({{tipoParticipante.codigo}})</mat-option>
+              }
+            </mat-select>
+            <mat-error *ngIf="f['tipoParticipante'].touched && f['tipoParticipante'].errors && !isReadOnlyMode">
+              {{ getErrorMessage('tipoParticipante') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="col-md-4">
+          <mat-form-field appearance="outline" class="w-100">
             <mat-label>Estado</mat-label>
             <mat-select formControlName="estado" [disabled]="isReadOnlyMode">
               <mat-option value="1">Activo</mat-option>
@@ -165,7 +178,9 @@
             </mat-error>
           </mat-form-field>
         </div>
+      </div>
 
+      <div class="row">
         <div class="col-md-4">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Nota (0-20)</mat-label>

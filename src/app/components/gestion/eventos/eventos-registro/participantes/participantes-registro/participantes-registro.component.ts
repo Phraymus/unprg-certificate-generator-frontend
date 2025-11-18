@@ -11,8 +11,8 @@ import {MatDatepickerModule} from '@angular/material/datepicker';
 import {MatNativeDateModule} from '@angular/material/core';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {CommonModule} from '@angular/common';
-import {TbParticipante, TbPersona, TbEvento} from "~shared/interfaces";
-import {TbParticipanteService, TbPersonaService} from "app/services";
+import {TbParticipante, TbPersona, TbEvento, TbTipoParticipante} from "~shared/interfaces";
+import {TbParticipanteService, TbPersonaService, TbTipoParticipanteService} from "app/services";
 import {Observable, of} from 'rxjs';
 import {startWith, debounceTime, distinctUntilChanged, switchMap, catchError} from 'rxjs/operators';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
@@ -54,6 +54,7 @@ interface DialogData {
 export class ParticipantesRegistroComponent implements OnInit {
   private _formBuilder: FormBuilder = inject(FormBuilder);
   private _tbParticipanteService: TbParticipanteService = inject(TbParticipanteService);
+  private _tbTipoParticipanteService: TbTipoParticipanteService = inject(TbTipoParticipanteService);
   private _tbPersonaService: TbPersonaService = inject(TbPersonaService);
   private _dialogRef: MatDialogRef<ParticipantesRegistroComponent> = inject(MatDialogRef<ParticipantesRegistroComponent>);
   private _snackBar: MatSnackBar = inject(MatSnackBar);
@@ -65,6 +66,7 @@ export class ParticipantesRegistroComponent implements OnInit {
   personaExistente = false;
   personaExistenteDto: TbPersona = null;
   personasFiltradas!: Observable<TbPersona[]>;
+  tipoParticipantesDisponibles!: TbTipoParticipante[];
 
   // Variables para manejo de imagen del comprobante
   selectedFile: File | null = null;
@@ -82,6 +84,7 @@ export class ParticipantesRegistroComponent implements OnInit {
   ngOnInit() {
     this.initializeForm();
     this.setupPersonaSearch();
+    this.loadTipoParticipanteData();
 
     if ((this.isEditMode || this.isReadOnlyMode) && this.data.participante) {
       this.loadParticipanteData();
@@ -90,6 +93,17 @@ export class ParticipantesRegistroComponent implements OnInit {
     if (this.isReadOnlyMode) {
       this.participanteForm.disable();
     }
+  }
+
+  private loadTipoParticipanteData(): void {
+    this._tbTipoParticipanteService.findAllByEstado(true).subscribe({
+      next: (tipoParticipantes) => {
+        this.tipoParticipantesDisponibles = tipoParticipantes;
+      },
+      error: (error) => {
+        console.error('Error al cargar tipos de participante:', error);
+      }
+    });
   }
 
   private initializeForm() {
@@ -106,6 +120,7 @@ export class ParticipantesRegistroComponent implements OnInit {
       telefono: ['', [Validators.pattern(/^\d{9}$/)]],
 
       // Datos de participación
+      tipoParticipante: ['', [Validators.required]],
       estado: ['Activo', [Validators.required]],
       fechaInscripcion: [new Date(), [Validators.required]],
       nota: ['', [Validators.min(0), Validators.max(20)]]
@@ -144,7 +159,8 @@ export class ParticipantesRegistroComponent implements OnInit {
         telefono: participante.tbPersona?.telefono || '',
         estado: participante.estado || 'Activo',
         fechaInscripcion: participante.fechaInscripcion ? new Date(participante.fechaInscripcion) : new Date(),
-        nota: participante.nota || ''
+        nota: participante.nota || '',
+        tipoParticipante: participante?.tbTipoParticipante.id || ''
       });
 
       // Cargar imagen del comprobante si existe
@@ -383,7 +399,10 @@ export class ParticipantesRegistroComponent implements OnInit {
         fechaInscripcion: formData.fechaInscripcion ?
           new Date(formData.fechaInscripcion).toISOString().split('T')[0] :
           new Date().toISOString().split('T')[0],
-        nota: formData.nota ? parseFloat(formData.nota) : null
+        nota: formData.nota ? parseFloat(formData.nota) : null,
+        tbTipoParticipante: {
+          id: formData.tipoParticipante
+        }
       };
 
       // Para edición, mantener los IDs

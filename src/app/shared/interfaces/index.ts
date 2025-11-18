@@ -9,4 +9,5 @@ export { TbParticipante } from './TbParticipante.interface';
 export { TbParticipanteId } from './TbParticipanteId.interface';
 export { TbPersona } from './TbPersona.interface';
 export { TbUsuario } from './TbUsuario.interface';
+export { TbTipoParticipante } from './TbTipoParticipante.interface';
 export { ApiResponse } from './ApiResponse';

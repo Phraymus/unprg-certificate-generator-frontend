@@ -8,3 +8,4 @@ export { TbParticipanteService } from './tbParticipanteService.service';
 export { TbPersonaService } from './tbPersonaService.service';
 export { TbUsuarioService } from './tbUsuarioService.service';
 export { TbCertificateService } from './tbCertificateService.service';
+export { TbTipoParticipanteService } from './tb-tipo-participanteService.service';
