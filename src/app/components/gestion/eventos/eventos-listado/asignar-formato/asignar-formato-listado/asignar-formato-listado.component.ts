@@ -8,6 +8,8 @@ import {MatIcon} from "@angular/material/icon";
 import {TbEvento} from "~shared/interfaces";
 import {MatButton} from "@angular/material/button";
 import {AgGridAngularCustomComponent} from "~shared/components/ag-grid-angular-custom/ag-grid-angular-custom.component";
+import {ColDef} from "ag-grid-community";
+import {MenuOption} from "~shared/classes/ActionButtonsComponent";
 
 interface DialogData {
   tbEvento: TbEvento;
@@ -33,6 +35,9 @@ export class AsignarFormatoListadoComponent {
   private _dialogRef: MatDialogRef<AsignarFormatoListadoComponent> = inject(MatDialogRef<AsignarFormatoListadoComponent>);
 
   tbEvento: TbEvento;
+  menuOptions: MenuOption[];
+  rowData: any[];
+  colDefs: ColDef[];
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: DialogData) {
     this.tbEvento = data.tbEvento;
@@ -40,5 +45,33 @@ export class AsignarFormatoListadoComponent {
 
   onCancel() {
     this._dialogRef.close({ success: false });
+  }
+
+  onAdd() {
+
+  }
+
+  onEdit($event: any) {
+
+  }
+
+  onView($event: any) {
+
+  }
+
+  onDownload($event: any) {
+
+  }
+
+  onDelete($event: any) {
+
+  }
+
+  onGridReady($event: any) {
+
+  }
+
+  handleMenuAction($event: { action: string; data: any }) {
+
   }
 }

@@ -138,52 +138,7 @@ export class EventosRegistroComponent implements OnInit {
         fechaInicio: evento.fechaInicio ? new Date(evento.fechaInicio) : null,
         fechaFin: evento.fechaFin ? new Date(evento.fechaFin) : null
       });
-
-      // Cargar formato asociado si existe
-      if (evento.id) {
-        this.loadEventoFormato(evento.id);
-      }
     }
-  }
-
-  private loadEventoFormato(eventoId: number) {
-    // Usar el nuevo endpoint específico para buscar por ID de evento
-    this._tbEventoFormatoCertificadoService.findByEventoId(eventoId).subscribe({
-      next: (eventoFormato) => {
-        if (eventoFormato) {
-          this.eventoFormatoActual = eventoFormato;
-          this.eventoForm.patchValue({
-            formatoCertificado: eventoFormato.idtbFormatoCertificado?.id,
-            descripcionFormato: eventoFormato.descripcion || ''
-          });
-          console.log('Formato cargado:', eventoFormato);
-        }
-      },
-      error: (error) => {
-        console.log('No hay formato asociado al evento:', error);
-        // Fallback: buscar en la lista completa
-        this.loadEventoFormatoFromList(eventoId);
-      }
-    });
-  }
-
-  // Método alternativo: buscar en la lista completa si findById no funciona
-  private loadEventoFormatoFromList(eventoId: number) {
-    this._tbEventoFormatoCertificadoService.findAll().subscribe({
-      next: (eventoFormatos) => {
-        const eventoFormato = eventoFormatos.find(ef => ef.tbEvento?.id === eventoId);
-        if (eventoFormato) {
-          this.eventoFormatoActual = eventoFormato;
-          this.eventoForm.patchValue({
-            formatoCertificado: eventoFormato.idtbFormatoCertificado?.id,
-            descripcionFormato: eventoFormato.descripcion || ''
-          });
-        }
-      },
-      error: (error) => {
-        console.error('Error al cargar formatos de eventos:', error);
-      }
-    });
   }
 
   onSubmit() {
@@ -219,15 +174,7 @@ export class EventosRegistroComponent implements OnInit {
 
   private createEvento(eventoData: TbEvento) {
     this._tbEventoService.insert(eventoData).subscribe({
-      next: (evento) => {
-        // Si se seleccionó un formato, crear la relación
-        if (this.eventoForm.get('formatoCertificado')?.value) {
-          this.createEventoFormato(evento.id!, evento);
-        } else {
-          this.isLoading = false;
-          this._dialogRef.close({success: true, data: evento, action: 'create'});
-        }
-      },
+      next: (evento) => {},
       error: (error) => {
         this.isLoading = false;
         console.error('Error al crear evento:', error);
@@ -236,125 +183,7 @@ export class EventosRegistroComponent implements OnInit {
   }
 
   private updateEvento(eventoData: TbEvento) {
-    this._tbEventoService.update(eventoData).subscribe({
-      next: (evento) => {
-        // Manejar la relación con formato
-        this.handleEventoFormatoUpdate(evento);
-      },
-      error: (error) => {
-        this.isLoading = false;
-        console.error('Error al actualizar evento:', error);
-      }
-    });
-  }
-
-  private handleEventoFormatoUpdate(evento: TbEvento) {
-    const formatoSeleccionado = this.eventoForm.get('formatoCertificado')?.value;
-
-    if (formatoSeleccionado) {
-      if (this.eventoFormatoActual) {
-        // Actualizar relación existente
-        this.updateEventoFormato(evento);
-      } else {
-        // Crear nueva relación
-        this.createEventoFormato(evento.id!, evento);
-      }
-    } else {
-      // Si no hay formato seleccionado pero existía una relación, eliminarla
-      if (this.eventoFormatoActual) {
-        this.deleteEventoFormato(evento);
-      } else {
-        this.isLoading = false;
-        this._dialogRef.close({success: true, data: evento, action: 'update'});
-      }
-    }
-  }
-
-  private createEventoFormato(eventoId: number, evento: TbEvento) {
-    const formData = this.eventoForm.value;
-    const codigo = `${formData.codigo}-FMT`;
-
-    // Crear objetos mínimos para las relaciones
-    const eventoRelacion: TbEvento = { id: eventoId };
-    const formatoSeleccionado = this.formatosDisponibles.find(f => f.id === formData.formatoCertificado);
-
-    const eventoFormatoData: TbEventoFormatoCertificado = {
-      tbEvento: eventoRelacion,
-      idtbFormatoCertificado: formatoSeleccionado,
-      codigo: codigo,
-      descripcion: formData.descripcionFormato || `Formato para evento ${formData.nombre}`,
-      fecha: this.formatDateToISO(new Date())
-    };
-
-    this._tbEventoFormatoCertificadoService.insert(eventoFormatoData).subscribe({
-      next: (eventoFormato) => {
-        this.isLoading = false;
-        this._dialogRef.close({
-          success: true,
-          data: evento,
-          action: this.isEditMode ? 'update' : 'create'
-        });
-      },
-      error: (error) => {
-        this.isLoading = false;
-        console.error('Error al asociar formato al evento:', error);
-        // Aunque falle la asociación, el evento ya fue creado/actualizado
-        this._dialogRef.close({
-          success: true,
-          data: evento,
-          action: this.isEditMode ? 'update' : 'create',
-          warning: 'Evento guardado pero no se pudo asociar el formato'
-        });
-      }
-    });
-  }
-
-  private updateEventoFormato(evento: TbEvento) {
-    const formData = this.eventoForm.value;
-    const formatoSeleccionado = this.formatosDisponibles.find(f => f.id === formData.formatoCertificado);
-
-    const eventoFormatoData: TbEventoFormatoCertificado = {
-      ...this.eventoFormatoActual!,
-      idtbFormatoCertificado: formatoSeleccionado,
-      descripcion: formData.descripcionFormato || this.eventoFormatoActual!.descripcion,
-      fecha: this.formatDateToISO(new Date())
-    };
-
-    this._tbEventoFormatoCertificadoService.update(eventoFormatoData).subscribe({
-      next: (eventoFormato) => {
-        this.isLoading = false;
-        this._dialogRef.close({success: true, data: evento, action: 'update'});
-      },
-      error: (error) => {
-        this.isLoading = false;
-        console.error('Error al actualizar formato del evento:', error);
-        this._dialogRef.close({
-          success: true,
-          data: evento,
-          action: 'update',
-          warning: 'Evento actualizado pero no se pudo actualizar el formato'
-        });
-      }
-    });
-  }
-
-  private deleteEventoFormato(evento: TbEvento) {
-    this._tbEventoFormatoCertificadoService.delete(this.eventoFormatoActual!).subscribe({
-      next: () => {
-        this.isLoading = false;
-        this._dialogRef.close({success: true, data: evento, action: 'update'});
-      },
-      error: (error) => {
-        this.isLoading = false;
-        console.error('Error al desasociar formato del evento:', error);
-        this._dialogRef.close({
-          success: true,
-          data: evento,
-          action: 'update',
-          warning: 'Evento actualizado pero no se pudo desasociar el formato'
-        });
-      }
-    });
+    this._tbEventoService.update(eventoData).subscribe();
   }
 
   private markFormGroupTouched() {
