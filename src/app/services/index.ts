@@ -2,7 +2,7 @@ export { TbFirmaService } from './tbFirmaService.service';
 export { TbCertificadoService } from './tbCertificadoService.service';
 export { TbEventoService } from './tbEventoService.service';
 export { TbEventoFormatoCertificadoService } from './tbEventoFormatoCertificadoService.service';
-export { TbEventoFormatoCertificadoFirmaService } from './tbEventoFormatoCertificadoFirmaService.service';
+export { TbFormatoCertificadoFirmaService } from './tbFormatoCertificadoFirmaService.service';
 export { TbFormatoCertificadoService } from './tbFormatoCertificadoService.service';
 export { TbParticipanteService } from './tbParticipanteService.service';
 export { TbPersonaService } from './tbPersonaService.service';

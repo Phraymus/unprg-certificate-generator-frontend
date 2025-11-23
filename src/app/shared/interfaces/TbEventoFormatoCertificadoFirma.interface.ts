@@ -1,9 +1,9 @@
 import { TbEventoFormatoCertificadoFirmaId } from './TbEventoFormatoCertificadoFirmaId.interface';
 import { TbFirma } from './TbFirma.interface';
-import { TbEventoFormatoCertificado } from './TbEventoFormatoCertificado.interface';
+import {TbFormatoCertificado} from "~interfaces/TbFormatoCertificado.interface";
 
-export interface TbEventoFormatoCertificadoFirma {
+export interface TbFormatoCertificadoFirma {
   id?: TbEventoFormatoCertificadoFirmaId;
-  idtbFirma?: TbFirma;
-  tbEventoFormatoCertificadoIdtbEvento?: TbEventoFormatoCertificado;
+  tbFirma?: TbFirma;
+  tbFormatoCertificado?: TbFormatoCertificado;
 }

@@ -2,13 +2,16 @@ import {Component, inject, OnInit} from '@angular/core';
 import {AgGridAngularCustomComponent} from "~shared/components/ag-grid-angular-custom/ag-grid-angular-custom.component";
 import {MatCard, MatCardContent, MatCardHeader, MatCardTitle} from "@angular/material/card";
 import {ColDef} from "ag-grid-community";
-import {TbFormatoCertificadoService} from "app/services";
-import {TbFormatoCertificado} from "~shared/interfaces";
+import {TbFormatoCertificadoFirmaService, TbFormatoCertificadoService} from "app/services";
+import {TbEvento, TbFormatoCertificado} from "~shared/interfaces";
 import {MatDialog} from "@angular/material/dialog";
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {FormatosRegistroComponent} from "app/components/gestion/formatos/formatos-registro/formatos-registro.component";
 import {MatIcon} from "@angular/material/icon";
 import {MenuOption} from "~shared/classes/ActionButtonsComponent";
+import {
+  AsignarFirmasComponent
+} from "app/components/gestion/formatos/formatos-listado/asignar-firmas/asignar-firmas.component";
 
 @Component({
   selector: 'app-formato-listado',
@@ -24,6 +27,7 @@ import {MenuOption} from "~shared/classes/ActionButtonsComponent";
 })
 export class FormatosListadoComponent implements OnInit {
   private _tbFormatoCertificadoService: TbFormatoCertificadoService = inject(TbFormatoCertificadoService);
+  private _tbFormatoCertificadoFirmaService: TbFormatoCertificadoFirmaService = inject(TbFormatoCertificadoFirmaService);
   private _matDialog: MatDialog = inject(MatDialog);
   private _snackBar: MatSnackBar = inject(MatSnackBar);
 
@@ -74,6 +78,11 @@ export class FormatosListadoComponent implements OnInit {
   ];
 
   menuOptions: MenuOption[] = [
+    {
+      label: 'Asignar firmas',
+      icon: 'edit',
+      action: "asignSignatures"
+    },
     {label: 'Descargar plantilla', icon: 'download', action: "downloadTemplate"},
     {label: 'Ver diccionario de datos', icon: 'book', action: "dataDictionary"},
   ];
@@ -285,11 +294,66 @@ export class FormatosListadoComponent implements OnInit {
         this.onDownload($event.data);
         break;
       case 'asignSignatures':
-        // Aquí puedes implementar la lógica para asignar firmas
-        this.showMessage('Funcionalidad de asignar firmas no implementada aún', 'info');
+        this.asignarFirmas($event.data);
         break;
       default:
         console.warn('Acción de menú no reconocida:', $event.action);
     }
+  }
+
+  asignarFirmas(tbFormatoCertificado: TbFormatoCertificado) {
+    // Mostrar loading mientras se cargan las firmas ya asignadas
+    this.showMessage('Cargando firmas asignadas...', 'info');
+
+    // Primero obtener los IDs de las firmas ya asignadas
+    this._tbFormatoCertificadoFirmaService
+      .findFirmaIdsByFormatoCertificadoId(tbFormatoCertificado.id!)
+      .subscribe({
+        next: (firmaIdsAsignadas) => {
+          console.log('Firmas ya asignadas:', firmaIdsAsignadas);
+
+          // Abrir el modal con los IDs de firmas pre-seleccionadas
+          const dialogRef = this._matDialog.open(AsignarFirmasComponent, {
+            width: '90vw',
+            maxWidth: '1200px',
+            maxHeight: '90vh',
+            data: {
+              tbFormatoCertificado: tbFormatoCertificado,
+              firmaIdsYaAsignadas: firmaIdsAsignadas // Pasar IDs de firmas ya asignadas
+            },
+            disableClose: true,
+            panelClass: 'custom-dialog-container'
+          });
+
+          dialogRef.afterClosed().subscribe(result => {
+            if (result?.success) {
+              const count = result.count || 0;
+              this.showMessage(`${count} firma(s) asignada(s) al formato exitosamente`, 'success');
+            }
+          });
+        },
+        error: (error) => {
+          console.error('Error al cargar firmas asignadas:', error);
+          // Si falla, abrir el modal sin pre-selección
+          const dialogRef = this._matDialog.open(AsignarFirmasComponent, {
+            width: '90vw',
+            maxWidth: '1200px',
+            maxHeight: '90vh',
+            data: {
+              evento: tbFormatoCertificado,
+              firmaIdsYaAsignadas: []
+            },
+            disableClose: true,
+            panelClass: 'custom-dialog-container'
+          });
+
+          dialogRef.afterClosed().subscribe(result => {
+            if (result?.success) {
+              const count = result.count || 0;
+              this.showMessage(`${count} firma(s) asignada(s) al formato exitosamente`, 'success');
+            }
+          });
+        }
+      });
   }
 }

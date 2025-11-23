@@ -1,7 +1,7 @@
 export { TbCertificado } from './TbCertificado.interface';
 export { TbEvento } from './TbEvento.interface';
 export { TbEventoFormatoCertificado } from './TbEventoFormatoCertificado.interface';
-export { TbEventoFormatoCertificadoFirma } from './TbEventoFormatoCertificadoFirma.interface';
+export { TbFormatoCertificadoFirma } from './TbEventoFormatoCertificadoFirma.interface';
 export { TbEventoFormatoCertificadoFirmaId } from './TbEventoFormatoCertificadoFirmaId.interface';
 export { TbFirma } from './TbFirma.interface';
 export { TbFormatoCertificado } from './TbFormatoCertificado.interface';

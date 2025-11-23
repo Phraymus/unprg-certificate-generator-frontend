@@ -8,12 +8,12 @@ import { CommonModule } from '@angular/common';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, GridApi, GridOptions, GridReadyEvent } from 'ag-grid-community';
 import { AG_GRID_LOCALE_ES } from '@ag-grid-community/locale';
-import { TbFirma, TbEvento } from "~shared/interfaces";
-import { TbFirmaService, TbEventoFormatoCertificadoFirmaService } from "app/services";
+import { TbFirma, TbFormatoCertificado } from "~interfaces/index";
+import { TbFirmaService, TbFormatoCertificadoFirmaService } from "app/services";
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 interface DialogData {
-  evento: TbEvento;
+  tbFormatoCertificado: TbFormatoCertificado;
   firmaIdsYaAsignadas?: number[]; // IDs de firmas ya asignadas
 }
 
@@ -105,11 +105,11 @@ export class AsignarFirmasComponent implements OnInit {
   @ViewChild('agGrid') agGrid!: AgGridAngular;
 
   private _tbFirmaService: TbFirmaService = inject(TbFirmaService);
-  private _tbEventoFormatoCertificadoFirmaService: TbEventoFormatoCertificadoFirmaService = inject(TbEventoFormatoCertificadoFirmaService);
+  private _tbFormatoCertificadoFirmaService: TbFormatoCertificadoFirmaService = inject(TbFormatoCertificadoFirmaService);
   private _dialogRef: MatDialogRef<AsignarFirmasComponent> = inject(MatDialogRef<AsignarFirmasComponent>);
   private _snackBar: MatSnackBar = inject(MatSnackBar);
 
-  evento: TbEvento;
+  tbFormatoCertificado: TbFormatoCertificado;
   rowData: TbFirma[] = [];
   selectedFirmas: TbFirma[] = [];
   firmaIdsYaAsignadas: number[] = [];
@@ -177,7 +177,7 @@ export class AsignarFirmasComponent implements OnInit {
   };
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: DialogData) {
-    this.evento = data.evento;
+    this.tbFormatoCertificado = data.tbFormatoCertificado;
     this.firmaIdsYaAsignadas = data.firmaIdsYaAsignadas || [];
     console.log('IDs de firmas ya asignadas:', this.firmaIdsYaAsignadas);
   }
@@ -283,13 +283,13 @@ export class AsignarFirmasComponent implements OnInit {
     const asignaciones = this.selectedFirmas.map(firma => ({
       id: {
         idtbFirma: firma.id,
-        tbEventoFormatoCertificadoIdtbEvento: this.evento.id
+        tbEventoFormatoCertificadoIdtbEvento: this.tbFormatoCertificado.id
       },
-      idtbFirma: {
+      tbFirma: {
         id: firma.id
       },
-      tbEventoFormatoCertificadoIdtbEvento: {
-        id: this.evento.id
+      tbFormatoCertificado: {
+        id: this.tbFormatoCertificado.id
       }
     }));
 
@@ -298,7 +298,7 @@ export class AsignarFirmasComponent implements OnInit {
     let errorCount = 0;
 
     asignaciones.forEach((asignacion, index) => {
-      this._tbEventoFormatoCertificadoFirmaService.insert(asignacion).subscribe({
+      this._tbFormatoCertificadoFirmaService.insert(asignacion).subscribe({
         next: () => {
           completedCount++;
           this.checkComplete(completedCount, errorCount, asignaciones.length);

@@ -1,0 +1,69 @@
+<mat-card class="cardWithShadow theme-card">
+  <mat-card-header>
+    <mat-card-title class="m-b-0">
+      <span
+        class="iconify me-2"
+        [attr.data-icon]="'solar:pen-new-square-outline'"
+        data-inline="false"
+        style="font-size: 28px;">
+      </span>
+      Asignar formatos al evento
+      <span class="event-info">{{ tbEvento?.nombre }}</span>
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content class="b-t-1">
+    <!-- Información del evento -->
+    <div class="event-details-section">
+      <div class="event-detail-item">
+        <mat-icon>event</mat-icon>
+        <span><strong>Código:</strong> {{ tbEvento?.codigo }}</span>
+      </div>
+    </div>
+
+    <!-- Grid de firmas -->
+    <div class="grid-container">
+<!--      <app-ag-grid-angular-custom-->
+<!--        [rowData]="rowData"-->
+<!--        [columnDefs]="colDefs"-->
+<!--        [showActions]="true"-->
+<!--        [showDownloadButton]="false"-->
+<!--        [menuOptions]="menuOptions"-->
+<!--        [showAddButton]="true"-->
+<!--        addButtonText="Agregar Evento"-->
+<!--        addButtonClass="m-r-8 bg-primary"-->
+<!--        searchPlaceholder="Buscar eventos..."-->
+<!--        gridHeight="60vh"-->
+<!--        [paginationPageSize]="20"-->
+<!--        [rowHeight]="50"-->
+<!--        (onAdd)="onAdd()"-->
+<!--        (onEdit)="onEdit($event)"-->
+<!--        (onView)="onView($event)"-->
+<!--        (onDownload)="onDownload($event)"-->
+<!--        (onDelete)="onDelete($event)"-->
+<!--        (gridReady)="onGridReady($event)"-->
+<!--        (onMenuAction)="handleMenuAction($event)"-->
+<!--      >-->
+<!--      </app-ag-grid-angular-custom>-->
+    </div>
+  </mat-card-content>
+
+  <mat-card-footer class="p-3">
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="footer-info">
+        <mat-icon class="info-icon">info</mat-icon>
+        <span>Se muestran los formatos asignados al evento</span>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button
+          mat-stroked-button
+          type="button"
+          (click)="onCancel()">
+          <mat-icon>close</mat-icon>
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </mat-card-footer>
+</mat-card>

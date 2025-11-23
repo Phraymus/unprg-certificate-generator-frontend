@@ -2,7 +2,7 @@ import {Component, inject, OnInit} from '@angular/core';
 import {AgGridAngularCustomComponent} from "~shared/components/ag-grid-angular-custom/ag-grid-angular-custom.component";
 import {MatCard, MatCardContent, MatCardHeader, MatCardTitle} from "@angular/material/card";
 import {ColDef} from "ag-grid-community";
-import {TbEventoService, TbEventoFormatoCertificadoFirmaService} from "app/services";
+import {TbEventoService} from "app/services";
 import {TbEvento} from "~shared/interfaces";
 import {MatDialog} from "@angular/material/dialog";
 import {EventosRegistroComponent} from "app/components/gestion/eventos/eventos-registro/eventos-registro.component";
@@ -12,8 +12,8 @@ import {
   ParticipantesListadoComponent
 } from "app/components/gestion/eventos/eventos-registro/participantes/participantes-listado/participantes-listado.component";
 import {
-  AsignarFirmasComponent
-} from "app/components/gestion/eventos/eventos-listado/asignar-firmas/asignar-firmas.component";
+  AsignarFormatoListadoComponent
+} from "app/components/gestion/eventos/eventos-listado/asignar-formato/asignar-formato-listado/asignar-formato-listado.component";
 
 @Component({
   selector: 'app-eventos-listado',
@@ -29,7 +29,6 @@ import {
 })
 export class EventosListadoComponent implements OnInit {
   private _tbEventoService: TbEventoService = inject(TbEventoService);
-  private _tbEventoFormatoCertificadoFirmaService: TbEventoFormatoCertificadoFirmaService = inject(TbEventoFormatoCertificadoFirmaService);
   private _matDialog: MatDialog = inject(MatDialog);
   private _snackBar: MatSnackBar = inject(MatSnackBar);
 
@@ -117,14 +116,14 @@ export class EventosListadoComponent implements OnInit {
 
   menuOptions: MenuOption[] = [
     {
+      icon: 'folder',
+      label: 'Asignar formatos',
+      action: 'asignFormato',
+    },
+    {
       icon: 'visibility',
       label: 'Ver participantes',
       action: 'verParticipantes',
-    },
-    {
-      label: 'Asignar firmas',
-      icon: 'edit',
-      action: "asignSignatures"
     },
     {
       label: 'Generar enlace de registro',
@@ -321,11 +320,11 @@ export class EventosListadoComponent implements OnInit {
 
   handleMenuAction($event: { action: string; data: any }) {
     switch ($event.action) {
+      case 'asignFormato':
+        this.asignarFormato($event.data);
+        break;
       case 'verParticipantes':
         this.verParticipantes($event.data);
-        break;
-      case 'asignSignatures':
-        this.asignarFirmas($event.data);
         break;
       case 'linkGenerate':
         this.linkGenerate($event.data);
@@ -333,6 +332,19 @@ export class EventosListadoComponent implements OnInit {
       default:
         this.showMessage(`Acción desconocida: ${$event.action}`);
     }
+  }
+
+  asignarFormato(tbEvento: TbEvento) {
+    const dialogRef = this._matDialog.open(AsignarFormatoListadoComponent, {
+            width: '90vw',
+            maxWidth: '1200px',
+            maxHeight: '90vh',
+            data: {
+              tbEvento: tbEvento,
+            },
+            disableClose: true,
+            panelClass: 'custom-dialog-container'
+          });
   }
 
   /**
@@ -436,61 +448,5 @@ export class EventosListadoComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       console.log('Modal de participantes cerrado');
     });
-  }
-
-  asignarFirmas(evento: TbEvento) {
-    // Mostrar loading mientras se cargan las firmas ya asignadas
-    this.showMessage('Cargando firmas asignadas...', 'info');
-
-    // Primero obtener los IDs de las firmas ya asignadas
-    this._tbEventoFormatoCertificadoFirmaService
-      .findFirmaIdsByEventoId(evento.id!)
-      .subscribe({
-        next: (firmaIdsAsignadas) => {
-          console.log('Firmas ya asignadas:', firmaIdsAsignadas);
-
-          // Abrir el modal con los IDs de firmas pre-seleccionadas
-          const dialogRef = this._matDialog.open(AsignarFirmasComponent, {
-            width: '90vw',
-            maxWidth: '1200px',
-            maxHeight: '90vh',
-            data: {
-              evento,
-              firmaIdsYaAsignadas: firmaIdsAsignadas // Pasar IDs de firmas ya asignadas
-            },
-            disableClose: true,
-            panelClass: 'custom-dialog-container'
-          });
-
-          dialogRef.afterClosed().subscribe(result => {
-            if (result?.success) {
-              const count = result.count || 0;
-              this.showMessage(`${count} firma(s) asignada(s) al evento exitosamente`, 'success');
-            }
-          });
-        },
-        error: (error) => {
-          console.error('Error al cargar firmas asignadas:', error);
-          // Si falla, abrir el modal sin pre-selección
-          const dialogRef = this._matDialog.open(AsignarFirmasComponent, {
-            width: '90vw',
-            maxWidth: '1200px',
-            maxHeight: '90vh',
-            data: {
-              evento,
-              firmaIdsYaAsignadas: []
-            },
-            disableClose: true,
-            panelClass: 'custom-dialog-container'
-          });
-
-          dialogRef.afterClosed().subscribe(result => {
-            if (result?.success) {
-              const count = result.count || 0;
-              this.showMessage(`${count} firma(s) asignada(s) al evento exitosamente`, 'success');
-            }
-          });
-        }
-      });
   }
 }
