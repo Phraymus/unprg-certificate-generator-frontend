@@ -1,1 +1,74 @@
-<p>asignar-formato-registro works!</p>
+<mat-card class="cardWithShadow theme-card">
+  <mat-card-header>
+    <mat-card-title class="m-b-0">
+      <span
+        class="iconify me-2"
+        [attr.data-icon]="'solar:pen-new-square-outline'"
+        data-inline="false"
+        style="font-size: 28px;">
+      </span>
+      Asignar formato
+      <span style="font-size: 0.875em !important;" class="pt-2 ps-1">{{ data.action }}</span>
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content class="b-t-1">
+    <form [formGroup]="asignarFormatoForm" (ngSubmit)="onSubmit()" class="firma-form">
+
+      <div class="row">
+        <span >Seleccione a continuación el formato y el tipo de participante para el evento: </span>
+      </div>
+      <div class="row mt-2">
+
+        <div class="col-md-6">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Formato</mat-label>
+            <mat-select formControlName="formato" [disabled]="isReadOnlyMode">
+              @for ( formatoCertificado of formatoCertificadosDisponibles; track formatoCertificado.id) {
+                <mat-option [value]="formatoCertificado.id">{{formatoCertificado.nombreFormato}} ({{formatoCertificado.codigo}})</mat-option>
+              }
+            </mat-select>
+            <mat-error *ngIf="f['formato'].touched && f['formato'].errors && !isReadOnlyMode">
+              {{ getErrorMessage('formato') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="col-md-6">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Tipo de participante</mat-label>
+            <mat-select formControlName="participante" [disabled]="isReadOnlyMode">
+              @for ( tipoParticipante of tipoParticipantesDisponibles; track tipoParticipante.id) {
+                <mat-option [value]="tipoParticipante.id">{{tipoParticipante.nombre}} ({{tipoParticipante.codigo}})</mat-option>
+              }
+            </mat-select>
+            <mat-error *ngIf="f['participante'].touched && f['participante'].errors && !isReadOnlyMode">
+              {{ getErrorMessage('participante') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+      </div>
+
+    </form>
+  </mat-card-content>
+
+  <mat-card-footer class="p-3">
+    <div class="d-flex justify-content-end gap-2">
+      <button mat-stroked-button type="button" (click)="onCancel()" [disabled]="isLoading">
+        <mat-icon>close</mat-icon>
+        {{ isReadOnlyMode ? 'Cerrar' : 'Cancelar' }}
+      </button>
+
+      <button mat-flat-button color="primary" type="submit"
+              (click)="onSubmit()"
+              [disabled]="asignarFormatoForm.invalid || isLoading || isReadOnlyMode"
+              class="ms-2"
+              *ngIf="!isReadOnlyMode">
+        <mat-icon *ngIf="!isLoading">{{ isEditMode ? 'edit' : 'save' }}</mat-icon>
+        <mat-icon *ngIf="isLoading" class="spinning">sync</mat-icon>
+        {{ isLoading ? 'Guardando...' : (isEditMode ? 'Actualizar' : 'Guardar') }}
+      </button>
+    </div>
+  </mat-card-footer>
+</mat-card>
