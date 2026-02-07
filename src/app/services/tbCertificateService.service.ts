@@ -176,4 +176,52 @@ export class TbCertificateService {
       return false;
     }
   }
+
+
+  /**
+   * Genera el ZIP con todos los certificados del evento (PDF por defecto)
+   * GET /api/certificates/zip/{eventoId}?format=pdf
+   */
+  generateCertificatesZip(eventoId: number, format: 'pdf' | 'word' = 'pdf'): Observable<Blob> {
+    return this._http.get(`${url}/zip/${eventoId}?format=${format}`, {
+      responseType: 'blob',
+      headers: new HttpHeaders({
+        'Accept': 'application/zip'
+      })
+    });
+  }
+
+  /**
+   * Descarga automáticamente el ZIP con todos los certificados del evento en PDF
+   */
+  downloadCertificatesZipPdf(eventoId: number, evento?: { codigo?: string }): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.generateCertificatesZip(eventoId, 'pdf').subscribe({
+        next: (blob: Blob) => {
+          try {
+            const urlObj = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = urlObj;
+
+            const fecha = new Date().toISOString().split('T')[0];
+            const codigoEvento = evento?.codigo || eventoId.toString();
+            link.download = `certificados_${codigoEvento}_${fecha}.zip`;
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(urlObj);
+
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        },
+        error: (error) => {
+          console.error('Error al generar ZIP:', error);
+          reject(error);
+        }
+      });
+    });
+  }
 }

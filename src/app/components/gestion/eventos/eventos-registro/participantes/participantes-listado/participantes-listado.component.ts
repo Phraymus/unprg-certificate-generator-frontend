@@ -392,4 +392,32 @@ export class ParticipantesListadoComponent implements OnInit {
         break;
     }
   }
+
+  async exportar(ctx: any) {
+    if (!this.data.evento?.id) {
+      this.showMessage('No se encontró el ID del evento', 'error');
+      return;
+    }
+
+    try {
+      this.showMessage('Generando ZIP de certificados (PDF)...', 'info');
+
+      await this._tbCertificateService.downloadCertificatesZipPdf(
+        this.data.evento.id,
+        { codigo: this.data.evento.codigo }
+      );
+
+      this.showMessage('ZIP descargado exitosamente', 'success');
+    } catch (error: any) {
+      console.error('Error al descargar ZIP:', error);
+
+      let errorMessage = 'Error al generar el ZIP de certificados';
+
+      if (error?.status === 400) errorMessage = 'Solicitud inválida para generar el ZIP';
+      else if (error?.status === 404) errorMessage = 'No se encontraron participantes o formato de certificado';
+      else if (error?.status === 500) errorMessage = 'Error interno del servidor al generar el ZIP';
+
+      this.showMessage(errorMessage, 'error');
+    }
+  }
 }
