@@ -1,11 +1,8 @@
 import {Component, Inject, inject} from '@angular/core';
-import {AgGridAngular} from "ag-grid-angular";
 import {MatCard, MatCardContent, MatCardFooter, MatCardHeader, MatCardTitle} from "@angular/material/card";
-import {MatChip, MatChipRemove, MatChipSet} from "@angular/material/chips";
-import {NgForOf, NgIf} from "@angular/common";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatIcon} from "@angular/material/icon";
-import {TbEvento} from "~shared/interfaces";
+import {TbEvento, TbEventoFormatoCertificado} from "~shared/interfaces";
 import {MatButton} from "@angular/material/button";
 import {AgGridAngularCustomComponent} from "~shared/components/ag-grid-angular-custom/ag-grid-angular-custom.component";
 import {ColDef} from "ag-grid-community";
@@ -14,6 +11,7 @@ import {
   AsignarFormatoRegistroComponent
 } from "app/components/gestion/eventos/eventos-listado/asignar-formato/asignar-formato-registro/asignar-formato-registro.component";
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {TbEventoFormatoCertificadoService} from "app/services";
 
 interface DialogData {
   tbEvento: TbEvento;
@@ -36,19 +34,19 @@ interface DialogData {
 })
 export class AsignarFormatoListadoComponent {
 
-  private _dialogRef: MatDialogRef<AsignarFormatoListadoComponent> = inject(MatDialogRef<AsignarFormatoListadoComponent>);
-  private _matDialog: MatDialog = inject(MatDialog);
-  private _snackBar: MatSnackBar = inject(MatSnackBar);
+  private readonly _dialogRef: MatDialogRef<AsignarFormatoListadoComponent> = inject(MatDialogRef<AsignarFormatoListadoComponent>);
+  private readonly _matDialog: MatDialog = inject(MatDialog);
+  private readonly _snackBar: MatSnackBar = inject(MatSnackBar);
+  private readonly _tbEventoFormatoCertificadoService: TbEventoFormatoCertificadoService = inject(TbEventoFormatoCertificadoService);
 
   tbEvento: TbEvento;
-  menuOptions: MenuOption[];
-  rowData: any[];
+  menuOptions: MenuOption[] = [];
+  rowData: TbEventoFormatoCertificado[];
   colDefs: ColDef[] = [
-    {field: "codigo", headerName: "Código", width: 120},
-    {field: "nombreFormato", headerName: "Nombre del Formato", flex: 1, minWidth: 200},
-    {field: "tipoParticipante", headerName: "Tipo de formato", flex: 1, minWidth: 200},
+    {field: "tbFormatoCertificado.nombreFormato", headerName: "Nombre del Formato", flex: 1, minWidth: 200},
+    {field: "tbTipoParticipante.nombre", headerName: "Tipo de participante", flex: 1, minWidth: 200},
     {
-      field: "rutaFormato",
+      field: "tbFormatoCertificado.rutaFormato",
       headerName: "Archivo",
       width: 150,
       cellRenderer: (params: any) => {
@@ -63,6 +61,13 @@ export class AsignarFormatoListadoComponent {
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: DialogData) {
     this.tbEvento = data.tbEvento;
+    this.loadTbEventoFormatoCertificados();
+  }
+
+  loadTbEventoFormatoCertificados() {
+    this._tbEventoFormatoCertificadoService.findByEventoId(this.tbEvento.id).subscribe(res => {
+      this.rowData = res;
+    })
   }
 
   onCancel() {
@@ -72,8 +77,7 @@ export class AsignarFormatoListadoComponent {
   onAdd() {
     const data = {
       action: 'Registrar' as const,
-      title: 'Registrar Evento',
-      evento: {} as TbEvento
+      evento: this.tbEvento as TbEvento
     };
 
     const dialogRef = this._matDialog.open(AsignarFormatoRegistroComponent, {
@@ -85,11 +89,8 @@ export class AsignarFormatoListadoComponent {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result?.success) {
-        if (result.action === 'create') {
-          this.showMessage('Evento creado exitosamente', 'success');
-          // this.loadEventos();
-        }
+      if (result?.success && result?.data) {
+        this.loadTbEventoFormatoCertificados();
       }
     });
   }
@@ -105,20 +106,11 @@ export class AsignarFormatoListadoComponent {
     this._snackBar.open(message, 'Cerrar', config);
   }
 
-  onEdit($event: any) {
-
-  }
-
-  onView($event: any) {
-
-  }
-
-  onDownload($event: any) {
-
-  }
-
   onDelete($event: any) {
-
+    this._tbEventoFormatoCertificadoService.delete($event).subscribe(res => {
+      this.showMessage('Asignación eliminada correctamente', 'success');
+      this.loadTbEventoFormatoCertificados();
+    })
   }
 
   onGridReady($event: any) {

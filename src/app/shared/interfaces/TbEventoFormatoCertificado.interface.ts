@@ -1,11 +1,11 @@
 import { TbEvento } from './TbEvento.interface';
 import { TbFormatoCertificado } from './TbFormatoCertificado.interface';
+import {TbTipoParticipante} from "~interfaces/TbTipoParticipante.interface";
+import {TbEventoFormatoCertificadoId} from "~interfaces/TbEventoFormatoCertificadoId";
 
 export interface TbEventoFormatoCertificado {
-  id?: number;
+  id?: TbEventoFormatoCertificadoId;
   tbEvento?: TbEvento;
-  idtbFormatoCertificado?: TbFormatoCertificado;
-  codigo?: string;
-  descripcion?: string;
-  fecha?: string; // LocalDate se mapea a string en formato ISO
+  tbFormatoCertificado?: TbFormatoCertificado;
+  tbTipoParticipante?: TbTipoParticipante;
 }

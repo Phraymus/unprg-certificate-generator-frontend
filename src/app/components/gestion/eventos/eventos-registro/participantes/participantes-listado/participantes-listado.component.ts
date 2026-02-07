@@ -272,48 +272,42 @@ export class ParticipantesListadoComponent implements OnInit {
   async onDownloadPdf(rowData: TbParticipante) {
     console.log('Generando certificado PDF para:', rowData);
 
-    const link = document.createElement('a');
-    link.href = 'assets/FORMATO_SIGNED2.pdf'; // ruta dentro de assets
-    link.download = 'mi-archivo.pdf';        // nombre con el que se guarda
-    link.click();
-    link.remove();
+    if (!rowData.tbPersona?.id || !rowData.tbEvento?.id) {
+      this.showMessage('Datos del participante incompletos', 'error');
+      return;
+    }
 
-    // if (!rowData.tbPersona?.id || !rowData.tbEvento?.id) {
-    //   this.showMessage('Datos del participante incompletos', 'error');
-    //   return;
-    // }
-    //
-    // try {
-    //   // Mostrar mensaje de carga
-    //   this.showMessage('Generando certificado PDF...', 'info');
-    //
-    //   // Llamar al servicio para generar y descargar el certificado PDF
-    //   await this._tbCertificateService.downloadCertificatePdf(
-    //     rowData.tbEvento.id,
-    //     rowData.tbPersona.id,
-    //     rowData
-    //   );
-    //
-    //   this.showMessage('Certificado PDF generado y descargado exitosamente', 'success');
-    //
-    // } catch (error: any) {
-    //   console.error('Error al generar certificado PDF:', error);
-    //
-    //   // Manejar diferentes tipos de errores
-    //   let errorMessage = 'Error al generar el certificado PDF';
-    //
-    //   if (error.status === 400) {
-    //     errorMessage = 'No se pudo generar el certificado: datos del participante inválidos';
-    //   } else if (error.status === 404) {
-    //     errorMessage = 'No se encontró el formato de certificado para este evento';
-    //   } else if (error.status === 500) {
-    //     errorMessage = 'Error interno del servidor al generar el certificado';
-    //   } else if (error.error && error.error.message) {
-    //     errorMessage = error.error.message;
-    //   }
-    //
-    //   this.showMessage(errorMessage, 'error');
-    // }
+    try {
+      // Mostrar mensaje de carga
+      this.showMessage('Generando certificado PDF...', 'info');
+
+      // Llamar al servicio para generar y descargar el certificado PDF
+      await this._tbCertificateService.downloadCertificatePdf(
+        rowData.tbEvento.id,
+        rowData.tbPersona.id,
+        rowData
+      );
+
+      this.showMessage('Certificado PDF generado y descargado exitosamente', 'success');
+
+    } catch (error: any) {
+      console.error('Error al generar certificado PDF:', error);
+
+      // Manejar diferentes tipos de errores
+      let errorMessage = 'Error al generar el certificado PDF';
+
+      if (error.status === 400) {
+        errorMessage = 'No se pudo generar el certificado: datos del participante inválidos';
+      } else if (error.status === 404) {
+        errorMessage = 'No se encontró el formato de certificado para este evento';
+      } else if (error.status === 500) {
+        errorMessage = 'Error interno del servidor al generar el certificado';
+      } else if (error.error && error.error.message) {
+        errorMessage = error.error.message;
+      }
+
+      this.showMessage(errorMessage, 'error');
+    }
   }
 
   onDelete(rowData: TbParticipante) {
