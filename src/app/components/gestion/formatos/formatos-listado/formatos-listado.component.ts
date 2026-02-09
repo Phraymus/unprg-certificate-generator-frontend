@@ -83,7 +83,7 @@ export class FormatosListadoComponent implements OnInit {
       icon: 'edit',
       action: "asignSignatures"
     },
-    {label: 'Descargar plantilla', icon: 'download', action: "downloadTemplate"},
+    {label: 'Descargar formato', icon: 'download', action: "downloadTemplate"},
     {label: 'Ver diccionario de datos', icon: 'book', action: "dataDictionary"},
   ];
 

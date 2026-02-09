@@ -8,6 +8,9 @@ import { MatDialog } from "@angular/material/dialog";
 import { FirmasRegistroComponent } from "app/components/gestion/firmas/firmas-registro/firmas-registro.component";
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {MenuOption} from "~shared/classes/ActionButtonsComponent";
+import {
+  CertificadoDigitalRegistroComponent
+} from "app/components/gestion/firmas/firmas-listado/certificado-digital-registro/certificado-digital-registro.component";
 
 // Cell Renderer para mostrar imagen de firma
 class ImageCellRenderer {
@@ -92,6 +95,7 @@ export class FirmasListadoComponent implements OnInit {
   private _tbFirmaService: TbFirmaService = inject(TbFirmaService);
   private _matDialog: MatDialog = inject(MatDialog);
   private _snackBar: MatSnackBar = inject(MatSnackBar);
+  private _dialog: MatDialog = inject(MatDialog);
 
   rowData: TbFirma[] = [];
 
@@ -322,6 +326,10 @@ export class FirmasListadoComponent implements OnInit {
   }
 
   private asignarCertificadoDigital(data: any) {
-    // alert("click")
+    this._dialog.open(CertificadoDigitalRegistroComponent, {
+      width: '1200px',
+      maxWidth: '95vw',
+      data: { firma: data }
+    });
   }
 }

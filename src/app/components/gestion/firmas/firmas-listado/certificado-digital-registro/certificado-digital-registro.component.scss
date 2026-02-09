@@ -1,0 +1,305 @@
+.active-box {
+  background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+  border: 2px solid #4caf50;
+  border-radius: 12px;
+  padding: 16px;
+
+  mat-icon {
+    color: #4caf50;
+    flex-shrink: 0; // ✅ Evita que el ícono se comprima
+  }
+
+  strong {
+    color: #2e7d32;
+  }
+
+  .small-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    margin-right: 4px;
+    flex-shrink: 0; // ✅ Evita que el ícono se comprima
+  }
+}
+
+.info-banner {
+  background: linear-gradient(135deg, #e3f2fd 0%, #f5f5f5 100%);
+  border-left: 4px solid #2196f3;
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  mat-icon {
+    color: #2196f3;
+    margin-top: 2px;
+    flex-shrink: 0; // ✅ Evita que el ícono se comprima
+  }
+
+  strong {
+    color: #1976d2;
+  }
+}
+
+.file-upload-box {
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  background: #fafafa;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #2196f3;
+    background: #f5f5f5;
+  }
+
+  .upload-button {
+    padding: 12px 24px;
+    font-size: 16px;
+  }
+
+  .file-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #4caf50;
+
+    mat-icon {
+      font-size: 20px;
+      flex-shrink: 0; // ✅ Evita que el ícono se comprima
+    }
+  }
+
+  .file-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #757575;
+    font-size: 14px;
+
+    .small-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0; // ✅ Evita que el ícono se comprima
+    }
+  }
+}
+
+.historial-section {
+  h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #424242;
+
+    mat-icon {
+      color: #757575;
+      flex-shrink: 0; // ✅ Evita que el ícono se comprima
+    }
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: #9e9e9e;
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    opacity: 0.5;
+    margin-bottom: 16px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 16px;
+  }
+}
+
+.cert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  // ✅ AGREGADO: Scroll cuando hay muchos certificados
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 8px; // Espacio para el scrollbar
+
+  // Estilos del scrollbar (Webkit - Chrome, Safari, Edge)
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f5f5f5;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #bdbdbd;
+    border-radius: 4px;
+
+    &:hover {
+      background: #9e9e9e;
+    }
+  }
+
+  // Estilos del scrollbar (Firefox)
+  scrollbar-width: thin;
+  scrollbar-color: #bdbdbd #f5f5f5;
+}
+
+.cert-item {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 16px;
+  background: white;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .cert-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f5f5f5;
+    gap: 12px; // ✅ AGREGADO: Espacio entre elementos
+
+    .cert-number {
+      background: #f5f5f5;
+      color: #757575;
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-weight: 600;
+      font-size: 14px;
+      flex-shrink: 0; // ✅ AGREGADO: No se comprime
+    }
+  }
+
+  .cert-details {
+    .cert-name {
+      display: flex;
+      align-items: flex-start; // ✅ CAMBIADO: de center a flex-start para evitar corte
+      gap: 8px;
+      margin-bottom: 12px;
+
+      mat-icon {
+        color: #2196f3;
+        font-size: 20px;
+        margin-top: 2px; // ✅ AGREGADO: Alinear con el texto
+        flex-shrink: 0; // ✅ AGREGADO: No se comprime
+      }
+
+      strong {
+        font-size: 16px;
+        color: #212121;
+        word-break: break-word; // ✅ AGREGADO: Rompe palabras largas
+        line-height: 1.4; // ✅ AGREGADO: Mejor espaciado vertical
+        flex: 1; // ✅ AGREGADO: Ocupa el espacio disponible
+      }
+    }
+
+    .cert-info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .info-label {
+          font-size: 12px;
+          color: #757575;
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .info-value {
+          font-size: 14px;
+          color: #424242;
+          font-family: 'Courier New', monospace;
+          word-break: break-all; // ✅ AGREGADO: Rompe valores largos
+        }
+      }
+    }
+  }
+}
+
+.badge {
+  padding: 6px 16px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0; // ✅ AGREGADO: No se comprime
+  white-space: nowrap; // ✅ AGREGADO: No se parte en varias líneas
+
+  &.badge-active {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #4caf50;
+  }
+
+  &.badge-inactive {
+    background: #fafafa;
+    color: #9e9e9e;
+    border: 1px solid #e0e0e0;
+  }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .cert-info-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .file-upload-box {
+    padding: 16px;
+  }
+
+  .cert-list {
+    max-height: 400px;
+  }
+
+  .cert-item {
+    .cert-header {
+      flex-wrap: wrap; // Permite que se envuelvan en móviles si es necesario
+    }
+
+    .cert-details {
+      .cert-name {
+        strong {
+          font-size: 14px; // Texto un poco más pequeño en móviles
+        }
+      }
+    }
+  }
+}
