@@ -17,7 +17,7 @@ export class TbCertificadoDigitalService {
   }
 
   findActiveByFirmaId(idFirma: number): Observable<any> {
-    return this._http.get(`${urlCertificadoDigital}/findActiveByFirmaId/${idFirma}`);
+    return this._http.get(`${urlCertificadoDigital}/findFirstByFirmaIdAndEstado/${idFirma}/true`);
   }
 
   findAllByFirma(idFirma: number): Observable<any> {

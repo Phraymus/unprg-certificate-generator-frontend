@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit, inject, ViewChild } from '@angular/core';
 import { MatCard, MatCardContent, MatCardFooter, MatCardHeader, MatCardTitle } from "@angular/material/card";
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
@@ -11,10 +11,16 @@ import { AG_GRID_LOCALE_ES } from '@ag-grid-community/locale';
 import { TbFirma, TbFormatoCertificado } from "~interfaces/index";
 import { TbFirmaService, TbFormatoCertificadoFirmaService } from "app/services";
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ConfigurarFirmaComponent } from './configurar-firma/configurar-firma.component';
 
 interface DialogData {
   tbFormatoCertificado: TbFormatoCertificado;
   firmaIdsYaAsignadas?: number[]; // IDs de firmas ya asignadas
+}
+
+// Extender interfaz de TbFirma para incluir configuración temporal
+interface TbFirmaExtended extends TbFirma {
+  _config?: any; // Configuración temporal antes de guardar
 }
 
 // Cell Renderer para mostrar imagen en miniatura
@@ -106,12 +112,13 @@ export class AsignarFirmasComponent implements OnInit {
 
   private _tbFirmaService: TbFirmaService = inject(TbFirmaService);
   private _tbFormatoCertificadoFirmaService: TbFormatoCertificadoFirmaService = inject(TbFormatoCertificadoFirmaService);
+  private _matDialog: MatDialog = inject(MatDialog);
   private _dialogRef: MatDialogRef<AsignarFirmasComponent> = inject(MatDialogRef<AsignarFirmasComponent>);
   private _snackBar: MatSnackBar = inject(MatSnackBar);
 
   tbFormatoCertificado: TbFormatoCertificado;
-  rowData: TbFirma[] = [];
-  selectedFirmas: TbFirma[] = [];
+  rowData: TbFirmaExtended[] = [];
+  selectedFirmas: TbFirmaExtended[] = [];
   firmaIdsYaAsignadas: number[] = [];
   isLoading = false;
   gridApi!: GridApi;
@@ -125,7 +132,6 @@ export class AsignarFirmasComponent implements OnInit {
       maxWidth: 50,
       pinned: 'left',
       lockPosition: true,
-      // suppressMenu: true,
       sortable: false,
       filter: false,
       resizable: false
@@ -258,7 +264,7 @@ export class AsignarFirmasComponent implements OnInit {
     this.gridApi.deselectAll();
   }
 
-  removeFirma(firma: TbFirma) {
+  removeFirma(firma: TbFirmaExtended) {
     this.gridApi.forEachNode((node) => {
       if (node.data.id === firma.id) {
         node.setSelected(false);
@@ -271,27 +277,111 @@ export class AsignarFirmasComponent implements OnInit {
     return new Date(date).toLocaleDateString('es-ES');
   }
 
+  // ✅ MODIFICADO: Configurar firmas secuencialmente antes de guardar
   onSave() {
     if (this.selectedFirmas.length === 0) {
       this.showMessage('Debe seleccionar al menos una firma', 'error');
       return;
     }
 
+    // Abrir diálogo de configuración para cada firma seleccionada
+    this.configurarFirmasSecuencialmente(0);
+  }
+
+  private configurarFirmasSecuencialmente(index: number) {
+    if (index >= this.selectedFirmas.length) {
+      // Todas las firmas configuradas, proceder a guardar
+      this.guardarAsignaciones();
+      return;
+    }
+
+    const firma = this.selectedFirmas[index];
+
+    // Abrir modal de configuración para esta firma
+    const dialogRef = this._matDialog.open(ConfigurarFirmaComponent, {
+      width: '800px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      data: {
+        firma: firma,
+        orden: index + 1,
+        existingConfig: firma._config // Si existe configuración previa
+      },
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result?.success) {
+        // Guardar configuración en el objeto firma
+        firma._config = result.config;
+
+        // Continuar con la siguiente firma
+        this.configurarFirmasSecuencialmente(index + 1);
+      } else {
+        // Usuario canceló, preguntar si desea continuar
+        if (confirm('¿Desea cancelar la configuración de todas las firmas?')) {
+          return; // Cancelar todo
+        } else {
+          // Usar configuración por defecto y continuar
+          firma._config = this.getDefaultConfig(index + 1);
+          this.configurarFirmasSecuencialmente(index + 1);
+        }
+      }
+    });
+  }
+
+  private getDefaultConfig(orden: number) {
+    return {
+      orden: orden,
+      firmarDigital: '0',
+      firmaVisible: '1',
+      pagina: 1,
+      posX: 50,
+      posY: 50,
+      ancho: 150,
+      alto: 60,
+      layoutMode: 'ABS',
+      gapX: 10,
+      gapY: 10,
+      reason: 'Certificado académico oficial',
+      location: 'Universidad Nacional Pedro Ruiz Gallo'
+    };
+  }
+
+  private guardarAsignaciones() {
     this.isLoading = true;
 
-    // Crear las asignaciones
-    const asignaciones = this.selectedFirmas.map(firma => ({
-      id: {
-        idtbFirma: firma.id,
-        tbEventoFormatoCertificadoIdtbEvento: this.tbFormatoCertificado.id
-      },
-      tbFirma: {
-        id: firma.id
-      },
-      tbFormatoCertificado: {
-        id: this.tbFormatoCertificado.id
-      }
-    }));
+    // Crear las asignaciones con toda la configuración
+    const asignaciones = this.selectedFirmas.map((firma, index) => {
+      const config = firma._config || this.getDefaultConfig(index + 1);
+
+      return {
+        id: {
+          idtbFirma: firma.id,
+          idtbFormatoCertificado: this.tbFormatoCertificado.id
+        },
+        tbFirma: {
+          id: firma.id
+        },
+        tbFormatoCertificado: {
+          id: this.tbFormatoCertificado.id
+        },
+        // ✅ Agregar campos de configuración
+        orden: config.orden,
+        firmarDigital: config.firmarDigital,
+        firmaVisible: config.firmaVisible,
+        pagina: config.pagina,
+        posX: config.posX,
+        posY: config.posY,
+        ancho: config.ancho,
+        alto: config.alto,
+        layoutMode: config.layoutMode,
+        gapX: config.gapX,
+        gapY: config.gapY,
+        reason: config.reason,
+        location: config.location
+      };
+    });
 
     // Guardar cada asignación
     let completedCount = 0;

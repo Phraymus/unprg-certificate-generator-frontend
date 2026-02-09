@@ -1,0 +1,218 @@
+<div class="configurar-firma-dialog">
+  <h2 mat-dialog-title>
+    <mat-icon>tune</mat-icon>
+    Configurar Firma: {{ firma.nombre }}
+  </h2>
+
+  <mat-dialog-content>
+    <form [formGroup]="form">
+      <!-- Información de la firma -->
+      <mat-card class="firma-info-card">
+        <mat-card-content>
+          <div class="firma-header">
+            <div class="firma-image-container" *ngIf="firma.imagen">
+              <img
+                [src]="'data:image/png;base64,' + firma.imagen"
+                alt="Firma"
+                class="firma-preview">
+            </div>
+            <div class="firma-details">
+              <h3>{{ firma.codigo }} - {{ firma.nombre }}</h3>
+              <p *ngIf="firma.cargo"><mat-icon>work</mat-icon> {{ firma.cargo }}</p>
+              <p *ngIf="firma.entidad"><mat-icon>business</mat-icon> {{ firma.entidad }}</p>
+
+              <div class="cert-status" *ngIf="!cargandoCertificado">
+                <mat-icon [class.has-cert]="tieneCertificadoDigital" [class.no-cert]="!tieneCertificadoDigital">
+                  {{ tieneCertificadoDigital ? 'verified' : 'warning' }}
+                </mat-icon>
+                <span [class.has-cert]="tieneCertificadoDigital" [class.no-cert]="!tieneCertificadoDigital">
+                  {{ tieneCertificadoDigital ? 'Tiene certificado digital activo' : 'Sin certificado digital' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Configuración básica -->
+      <mat-card class="config-section">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>settings</mat-icon>
+            Configuración Básica
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Orden de Firma</mat-label>
+              <input matInput type="number" formControlName="orden" min="1">
+              <mat-icon matPrefix>format_list_numbered</mat-icon>
+              <mat-hint>Orden en que se aplicará la firma (1, 2, 3...)</mat-hint>
+              <mat-error *ngIf="form.get('orden')?.hasError('required')">Requerido</mat-error>
+              <mat-error *ngIf="form.get('orden')?.hasError('min')">Debe ser mayor a 0</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Página</mat-label>
+              <input matInput type="number" formControlName="pagina" min="1">
+              <mat-icon matPrefix>description</mat-icon>
+              <mat-hint>Número de página donde colocar la firma</mat-hint>
+              <mat-error *ngIf="form.get('pagina')?.hasError('required')">Requerido</mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="toggle-row">
+            <mat-slide-toggle
+              formControlName="firmaVisible"
+              color="primary">
+              <mat-icon>visibility</mat-icon>
+              Firma Visible (mostrar imagen)
+            </mat-slide-toggle>
+
+            <mat-slide-toggle
+              formControlName="firmarDigital"
+              color="accent"
+              [disabled]="!tieneCertificadoDigital"
+              [matTooltip]="!tieneCertificadoDigital ? 'Esta firma no tiene certificado digital' : 'Aplicar firma digital PKCS#7'">
+              <mat-icon>verified_user</mat-icon>
+              Firma Digital (PKCS#7)
+            </mat-slide-toggle>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Posicionamiento -->
+      <mat-card class="config-section">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>place</mat-icon>
+            Posicionamiento
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Modo de Posicionamiento</mat-label>
+            <mat-select formControlName="layoutMode">
+              <mat-option *ngFor="let mode of layoutModes" [value]="mode.value">
+                <mat-icon>{{ mode.icon }}</mat-icon>
+                {{ mode.label }}
+              </mat-option>
+            </mat-select>
+            <mat-hint>Cómo se posicionará la firma en el PDF</mat-hint>
+          </mat-form-field>
+
+          <!-- Coordenadas absolutas -->
+          <div class="form-row" *ngIf="isAbsoluteMode()">
+            <mat-form-field appearance="outline">
+              <mat-label>Posición X (puntos)</mat-label>
+              <input matInput type="number" formControlName="posX" min="0" step="1">
+              <mat-icon matPrefix>arrow_forward</mat-icon>
+              <mat-hint>Desde el borde izquierdo</mat-hint>
+              <mat-error *ngIf="form.get('posX')?.hasError('required')">Requerido para modo absoluto</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Posición Y (puntos)</mat-label>
+              <input matInput type="number" formControlName="posY" min="0" step="1">
+              <mat-icon matPrefix>arrow_downward</mat-icon>
+              <mat-hint>Desde el borde inferior</mat-hint>
+              <mat-error *ngIf="form.get('posY')?.hasError('required')">Requerido para modo absoluto</mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Espaciado para STACK -->
+          <div class="form-row" *ngIf="isStackMode()">
+            <mat-form-field appearance="outline">
+              <mat-label>Espaciado Vertical (puntos)</mat-label>
+              <input matInput type="number" formControlName="gapY" min="0" step="1">
+              <mat-icon matPrefix>height</mat-icon>
+              <mat-hint>Espacio entre firmas apiladas verticalmente</mat-hint>
+              <mat-error *ngIf="form.get('gapY')?.hasError('required')">Requerido para modo apilado</mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Espaciado para COLUMN -->
+          <div class="form-row" *ngIf="isColumnMode()">
+            <mat-form-field appearance="outline">
+              <mat-label>Espaciado Horizontal (puntos)</mat-label>
+              <input matInput type="number" formControlName="gapX" min="0" step="1">
+              <mat-icon matPrefix>width_full</mat-icon>
+              <mat-hint>Espacio entre firmas en columnas</mat-hint>
+              <mat-error *ngIf="form.get('gapX')?.hasError('required')">Requerido para modo columnas</mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Dimensiones -->
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Ancho (puntos)</mat-label>
+              <input matInput type="number" formControlName="ancho" min="10" step="1">
+              <mat-icon matPrefix>width_normal</mat-icon>
+              <mat-hint>Ancho de la imagen de firma</mat-hint>
+              <mat-error *ngIf="form.get('ancho')?.hasError('required')">Requerido</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Alto (puntos)</mat-label>
+              <input matInput type="number" formControlName="alto" min="10" step="1">
+              <mat-icon matPrefix>height</mat-icon>
+              <mat-hint>Alto de la imagen de firma</mat-hint>
+              <mat-error *ngIf="form.get('alto')?.hasError('required')">Requerido</mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="dimension-note">
+            <mat-icon>info</mat-icon>
+            <small>Nota: 1 punto = 1/72 pulgadas. Página A4 ≈ 595×842 puntos</small>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Metadatos de firma digital -->
+      <mat-card class="config-section" *ngIf="form.get('firmarDigital')?.value">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>description</mat-icon>
+            Metadatos de Firma Digital
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Razón de la Firma</mat-label>
+            <input matInput formControlName="reason" maxlength="200">
+            <mat-icon matPrefix>comment</mat-icon>
+            <mat-hint>Ej: "Certificado académico oficial"</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Ubicación</mat-label>
+            <input matInput formControlName="location" maxlength="200">
+            <mat-icon matPrefix>location_on</mat-icon>
+            <mat-hint>Ej: "Universidad Nacional Pedro Ruiz Gallo"</mat-hint>
+          </mat-form-field>
+
+          <div class="metadata-note">
+            <mat-icon>info</mat-icon>
+            <small>Estos datos aparecerán en las propiedades de la firma digital del PDF</small>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+      Cancelar
+    </button>
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="onSave()"
+      [disabled]="form.invalid">
+      <mat-icon>save</mat-icon>
+      Guardar Configuración
+    </button>
+  </mat-dialog-actions>
+</div>

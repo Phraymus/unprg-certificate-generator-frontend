@@ -1,0 +1,261 @@
+.configurar-firma-dialog {
+  h2[mat-dialog-title] {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e0e0e0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+
+    mat-icon {
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+    }
+  }
+
+  mat-dialog-content {
+    padding: 24px;
+    max-height: 70vh;
+    overflow-y: auto;
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+  }
+
+  mat-dialog-actions {
+    padding: 16px 24px;
+    border-top: 1px solid #e0e0e0;
+    gap: 12px;
+  }
+}
+
+// Información de la firma
+.firma-info-card {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  margin-bottom: 16px;
+
+  .firma-header {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+
+    .firma-image-container {
+      flex-shrink: 0;
+      padding: 12px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+      .firma-preview {
+        max-width: 150px;
+        max-height: 80px;
+        object-fit: contain;
+        display: block;
+      }
+    }
+
+    .firma-details {
+      flex: 1;
+
+      h3 {
+        margin: 0 0 8px 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #2c3e50;
+      }
+
+      p {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 4px 0;
+        color: #546e7a;
+        font-size: 14px;
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+          color: #7b8a9a;
+        }
+      }
+
+      .cert-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+
+        mat-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+
+          &.has-cert {
+            color: #4caf50;
+          }
+
+          &.no-cert {
+            color: #ff9800;
+          }
+        }
+
+        span {
+          &.has-cert {
+            color: #2e7d32;
+          }
+
+          &.no-cert {
+            color: #f57c00;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Secciones de configuración
+.config-section {
+  mat-card-header {
+    margin-bottom: 16px;
+
+    mat-card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #37474f;
+
+      mat-icon {
+        color: #5e35b1;
+      }
+    }
+  }
+
+  mat-card-content {
+    padding-top: 0;
+  }
+}
+
+// Formulario
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+mat-form-field {
+  mat-icon[matPrefix] {
+    margin-right: 8px;
+    color: #5e35b1;
+  }
+}
+
+// Toggles
+.toggle-row {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 16px 0;
+
+  mat-slide-toggle {
+    display: flex;
+    align-items: center;
+
+    mat-icon {
+      margin-right: 8px;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+    }
+  }
+}
+
+// Notas informativas
+.dimension-note,
+.metadata-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  margin-top: 12px;
+  background: #e3f2fd;
+  border-left: 4px solid #2196f3;
+  border-radius: 4px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #1976d2;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  small {
+    color: #0d47a1;
+    line-height: 1.4;
+  }
+}
+
+// Select con iconos
+mat-select mat-option {
+  mat-icon {
+    margin-right: 12px;
+    vertical-align: middle;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .firma-header {
+    flex-direction: column;
+    text-align: center;
+
+    .firma-details {
+      width: 100%;
+    }
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Animaciones
+mat-form-field {
+  transition: all 0.3s ease;
+
+  &:focus-within {
+    transform: translateY(-2px);
+  }
+}
+
+button {
+  transition: all 0.3s ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
