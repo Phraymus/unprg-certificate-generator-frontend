@@ -4,11 +4,12 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogModule } from '@angu
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, GridApi, GridOptions, GridReadyEvent } from 'ag-grid-community';
+import { ColDef, GridApi, GridOptions, GridReadyEvent, ICellRendererParams } from 'ag-grid-community';
 import { AG_GRID_LOCALE_ES } from '@ag-grid-community/locale';
-import { TbFirma, TbFormatoCertificado } from "~interfaces/index";
+import {TbFirma, TbFormatoCertificado, TbFormatoCertificadoFirma} from "~interfaces/index";
 import { TbFirmaService, TbFormatoCertificadoFirmaService } from "app/services";
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfigurarFirmaComponent } from './configurar-firma/configurar-firma.component';
@@ -16,11 +17,13 @@ import { ConfigurarFirmaComponent } from './configurar-firma/configurar-firma.co
 interface DialogData {
   tbFormatoCertificado: TbFormatoCertificado;
   firmaIdsYaAsignadas?: number[]; // IDs de firmas ya asignadas
+  firmasYaAsignadas?: TbFormatoCertificadoFirma[];
 }
 
 // Extender interfaz de TbFirma para incluir configuración temporal
 interface TbFirmaExtended extends TbFirma {
   _config?: any; // Configuración temporal antes de guardar
+  _hasConfig?: boolean; // Indica si ya tiene configuración guardada
 }
 
 // Cell Renderer para mostrar imagen en miniatura
@@ -88,6 +91,53 @@ class EstadoCellRenderer {
   }
 }
 
+// Cell Renderer para acciones
+class ActionsCellRenderer {
+  private eGui!: HTMLElement;
+  private params: any;
+
+  init(params: ICellRendererParams) {
+    this.params = params;
+    this.eGui = document.createElement('div');
+    this.eGui.style.cssText = 'display: flex; align-items: center; justify-content: center; height: 100%; gap: 4px;';
+
+    // Botón de configurar
+    const configBtn = document.createElement('button');
+    configBtn.innerHTML = `
+      <span class="material-icons" style="font-size: 20px;">settings</span>
+    `;
+    configBtn.style.cssText = `
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    `;
+    configBtn.title = 'Configurar firma';
+    configBtn.onmouseover = () => configBtn.style.background = '#e3f2fd';
+    configBtn.onmouseout = () => configBtn.style.background = 'transparent';
+    configBtn.onclick = () => {
+      if (params.context && params.context.componentParent) {
+        params.context.componentParent.configurarFirma(params.data);
+      }
+    };
+
+    this.eGui.appendChild(configBtn);
+  }
+
+  getGui() {
+    return this.eGui;
+  }
+
+  refresh() {
+    return false;
+  }
+}
+
 @Component({
   selector: 'app-asignar-firmas',
   standalone: true,
@@ -102,6 +152,7 @@ class EstadoCellRenderer {
     MatButtonModule,
     MatIconModule,
     MatChipsModule,
+    MatMenuModule,
     AgGridAngular
   ],
   templateUrl: './asignar-firmas.component.html',
@@ -120,6 +171,7 @@ export class AsignarFirmasComponent implements OnInit {
   rowData: TbFirmaExtended[] = [];
   selectedFirmas: TbFirmaExtended[] = [];
   firmaIdsYaAsignadas: number[] = [];
+  firmaYaAsignadas: TbFormatoCertificadoFirma[] = [];
   isLoading = false;
   gridApi!: GridApi;
 
@@ -161,6 +213,14 @@ export class AsignarFirmasComponent implements OnInit {
       cellRenderer: ImageCellRenderer,
       sortable: false,
       filter: false
+    },
+    {
+      headerName: "Acciones",
+      width: 100,
+      cellRenderer: ActionsCellRenderer,
+      sortable: false,
+      filter: false,
+      pinned: 'right'
     }
   ];
 
@@ -180,12 +240,15 @@ export class AsignarFirmasComponent implements OnInit {
     overlayNoRowsTemplate: '<span>No hay firmas disponibles</span>',
     overlayLoadingTemplate: '<span>Cargando firmas...</span>',
     rowHeight: 55,
+    context: {
+      componentParent: this // Para acceder al componente desde el cell renderer
+    }
   };
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: DialogData) {
     this.tbFormatoCertificado = data.tbFormatoCertificado;
     this.firmaIdsYaAsignadas = data.firmaIdsYaAsignadas || [];
-    console.log('IDs de firmas ya asignadas:', this.firmaIdsYaAsignadas);
+    this.firmaYaAsignadas = data.firmasYaAsignadas || [];
   }
 
   ngOnInit() {
@@ -204,7 +267,6 @@ export class AsignarFirmasComponent implements OnInit {
           }));
       },
       error: (error) => {
-        console.error('Error al cargar firmas:', error);
         this.showMessage('Error al cargar las firmas', 'error');
       }
     });
@@ -230,15 +292,19 @@ export class AsignarFirmasComponent implements OnInit {
 
     // Pre-seleccionar firmas ya asignadas si existen
     if (this.firmaIdsYaAsignadas.length > 0) {
-      console.log('Pre-seleccionando firmas con IDs:', this.firmaIdsYaAsignadas);
 
       setTimeout(() => {
         this.gridApi.forEachNode((node) => {
           if (node.data && node.data.id) {
             const isAssigned = this.firmaIdsYaAsignadas.includes(node.data.id);
+            const formatoCertificadoFirma = this.firmaYaAsignadas.find(res=>{
+              return res.tbFirma.id === node.data.id && res.tbFormatoCertificado.id === this.tbFormatoCertificado.id;
+            });
             if (isAssigned) {
-              console.log('Seleccionando firma:', node.data.codigo, node.data.id);
               node.setSelected(true);
+              if (formatoCertificadoFirma) {
+                node.data._config = formatoCertificadoFirma;
+              }
             }
           }
         });
@@ -246,7 +312,6 @@ export class AsignarFirmasComponent implements OnInit {
         // Actualizar contador después de pre-seleccionar
         setTimeout(() => {
           this.selectedFirmas = this.gridApi.getSelectedRows();
-          console.log('Firmas pre-seleccionadas:', this.selectedFirmas.length);
         }, 100);
       }, 200);
     }
@@ -277,25 +342,122 @@ export class AsignarFirmasComponent implements OnInit {
     return new Date(date).toLocaleDateString('es-ES');
   }
 
-  // ✅ MODIFICADO: Configurar firmas secuencialmente antes de guardar
+  configurarFirma(firma: TbFirmaExtended) {
+    // Buscar la firma en rowData para obtener la referencia actualizada
+    const firmaActual = this.rowData.find(f => f.id === firma.id);
+    if (!firmaActual) {
+      console.error('Firma no encontrada en rowData');
+      return;
+    }
+
+    // Buscar el índice de la firma en las seleccionadas para determinar su orden
+    const indexInSelected = this.selectedFirmas.findIndex(f => f.id === firma.id);
+    const orden = indexInSelected >= 0 ? indexInSelected + 1 : this.selectedFirmas.length + 1;
+
+    // PRIORIDAD 1: Si ya tiene configuración temporal, usarla
+    if (firmaActual._config) {
+      this.abrirModalConfiguracion(firmaActual, orden, firmaActual._config);
+      return;
+    }
+
+    // PRIORIDAD 2: Si está asignada en BD, cargar desde backend
+    if (this.firmaIdsYaAsignadas.includes(firma.id!)) {
+      this.cargarConfiguracionExistente(firmaActual, orden);
+    } else {
+      this.abrirModalConfiguracion(firmaActual, orden, null);
+    }
+  }
+
+  /**
+   * Carga la configuración existente desde el backend
+   */
+  private cargarConfiguracionExistente(firma: TbFirmaExtended, orden: number) {
+    this._tbFormatoCertificadoFirmaService
+      .findById2(this.tbFormatoCertificado.id!, firma.id!)
+      .subscribe({
+        next: (response: any) => {
+          this.abrirModalConfiguracion(firma, orden, response);
+        },
+        error: (error) => {
+          this.abrirModalConfiguracion(firma, orden, null);
+        }
+      });
+  }
+
+  /**
+   * Abre el modal de configuración
+   */
+  private abrirModalConfiguracion(firma: TbFirmaExtended, orden: number, existingConfig: any) {
+    const dialogRef = this._matDialog.open(ConfigurarFirmaComponent, {
+      width: '800px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      data: {
+        firma: firma,
+        orden: orden,
+        existingConfig: existingConfig
+      },
+      disableClose: false
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result?.success) {
+        // ✅ Guardar configuración en el objeto firma en rowData
+        const firmaEnRowData = this.rowData.find(f => f.id === firma.id);
+        if (firmaEnRowData) {
+          firmaEnRowData._config = result.config;
+          firmaEnRowData._hasConfig = true;
+        }
+
+        // Si la firma no estaba seleccionada, seleccionarla
+        if (!this.selectedFirmas.find(f => f.id === firma.id)) {
+          this.gridApi.forEachNode((node) => {
+            if (node.data.id === firma.id) {
+              node.setSelected(true);
+            }
+          });
+        }
+
+        // ✅ IMPORTANTE: Actualizar el nodo del grid con la configuración
+        this.gridApi.forEachNode((node) => {
+          if (node.data.id === firma.id) {
+            const updatedData = {
+              ...node.data,
+              _config: result.config,
+              _hasConfig: true
+            };
+            node.setData(updatedData);
+          }
+        });
+
+        this.showMessage('Configuración guardada temporalmente', 'success');
+      }
+    });
+  }
+
   onSave() {
     if (this.selectedFirmas.length === 0) {
       this.showMessage('Debe seleccionar al menos una firma', 'error');
       return;
     }
 
-    // Abrir diálogo de configuración para cada firma seleccionada
-    this.configurarFirmasSecuencialmente(0);
+    this.selectedFirmas = this.selectedFirmas.map(firmaSeleccionada => {
+      const firmaEnRowData = this.rowData.find(f => f.id === firmaSeleccionada.id);
+      return firmaEnRowData || firmaSeleccionada;
+    });
+
+    this.guardarAsignaciones();
   }
 
-  private configurarFirmasSecuencialmente(index: number) {
-    if (index >= this.selectedFirmas.length) {
+  private configurarFirmasSecuencialmente(firmasSinConfig: TbFirmaExtended[], index: number) {
+    if (index >= firmasSinConfig.length) {
       // Todas las firmas configuradas, proceder a guardar
       this.guardarAsignaciones();
       return;
     }
 
-    const firma = this.selectedFirmas[index];
+    const firma = firmasSinConfig[index];
+    const ordenGlobal = this.selectedFirmas.findIndex(f => f.id === firma.id) + 1;
 
     // Abrir modal de configuración para esta firma
     const dialogRef = this._matDialog.open(ConfigurarFirmaComponent, {
@@ -304,8 +466,8 @@ export class AsignarFirmasComponent implements OnInit {
       maxHeight: '90vh',
       data: {
         firma: firma,
-        orden: index + 1,
-        existingConfig: firma._config // Si existe configuración previa
+        orden: ordenGlobal,
+        existingConfig: firma._config
       },
       disableClose: true
     });
@@ -316,15 +478,15 @@ export class AsignarFirmasComponent implements OnInit {
         firma._config = result.config;
 
         // Continuar con la siguiente firma
-        this.configurarFirmasSecuencialmente(index + 1);
+        this.configurarFirmasSecuencialmente(firmasSinConfig, index + 1);
       } else {
         // Usuario canceló, preguntar si desea continuar
         if (confirm('¿Desea cancelar la configuración de todas las firmas?')) {
           return; // Cancelar todo
         } else {
           // Usar configuración por defecto y continuar
-          firma._config = this.getDefaultConfig(index + 1);
-          this.configurarFirmasSecuencialmente(index + 1);
+          firma._config = this.getDefaultConfig(ordenGlobal);
+          this.configurarFirmasSecuencialmente(firmasSinConfig, index + 1);
         }
       }
     });
@@ -366,7 +528,6 @@ export class AsignarFirmasComponent implements OnInit {
         tbFormatoCertificado: {
           id: this.tbFormatoCertificado.id
         },
-        // ✅ Agregar campos de configuración
         orden: config.orden,
         firmarDigital: config.firmarDigital,
         firmaVisible: config.firmaVisible,
@@ -388,13 +549,20 @@ export class AsignarFirmasComponent implements OnInit {
     let errorCount = 0;
 
     asignaciones.forEach((asignacion, index) => {
-      this._tbFormatoCertificadoFirmaService.insert(asignacion).subscribe({
+      // Usar update en lugar de insert si ya existe
+      const firma = this.selectedFirmas[index];
+      const isUpdate = this.firmaIdsYaAsignadas.includes(firma.id!);
+
+      const request = isUpdate
+        ? this._tbFormatoCertificadoFirmaService.update(asignacion)
+        : this._tbFormatoCertificadoFirmaService.insert(asignacion);
+
+      request.subscribe({
         next: () => {
           completedCount++;
           this.checkComplete(completedCount, errorCount, asignaciones.length);
         },
         error: (error) => {
-          console.error('Error al asignar firma:', error);
           errorCount++;
           this.checkComplete(completedCount, errorCount, asignaciones.length);
         }

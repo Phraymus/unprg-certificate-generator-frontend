@@ -153,17 +153,46 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
-  margin-bottom: 8px;
+  margin-bottom: 16px; // ✅ Aumentado de 8px a 16px para más separación
 }
 
 .full-width {
   width: 100%;
+  margin-bottom: 16px; // ✅ Añadido margen inferior
 }
 
+// ✅ MEJORA: Mejor espaciado para mat-form-field
 mat-form-field {
+  // Asegurar espacio suficiente para hints y errores
+  margin-bottom: 4px;
+
   mat-icon[matPrefix] {
     margin-right: 8px;
     color: #5e35b1;
+  }
+
+  // ✅ Espaciado mejorado para mat-hint
+  ::ng-deep .mat-mdc-form-field-hint-wrapper,
+  ::ng-deep .mat-mdc-form-field-bottom-align {
+    padding-top: 6px; // Más espacio entre input y hint
+  }
+
+  // ✅ Asegurar que el hint tenga suficiente altura
+  ::ng-deep .mat-mdc-form-field-hint {
+    line-height: 1.5; // Mejor altura de línea
+    padding-top: 2px;
+    display: block;
+  }
+
+  // ✅ Mejor espaciado para errores
+  ::ng-deep .mat-mdc-form-field-error {
+    line-height: 1.5;
+    padding-top: 2px;
+  }
+
+  // ✅ Espaciado adicional cuando hay subscript (hint/error)
+  ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+    margin-top: 6px; // Más separación del input
   }
 }
 
@@ -198,7 +227,8 @@ mat-form-field {
   align-items: flex-start;
   gap: 8px;
   padding: 12px;
-  margin-top: 12px;
+  margin-top: 16px; // ✅ Aumentado de 12px a 16px
+  margin-bottom: 8px; // ✅ Añadido margen inferior
   background: #e3f2fd;
   border-left: 4px solid #2196f3;
   border-radius: 4px;
@@ -214,15 +244,25 @@ mat-form-field {
 
   small {
     color: #0d47a1;
-    line-height: 1.4;
+    line-height: 1.5; // ✅ Mejorado de 1.4 a 1.5
+    flex: 1; // ✅ Permite que el texto use todo el espacio disponible
   }
 }
 
 // Select con iconos
-mat-select mat-option {
-  mat-icon {
-    margin-right: 12px;
-    vertical-align: middle;
+mat-select {
+  mat-option {
+    mat-icon {
+      margin-right: 12px;
+      vertical-align: middle;
+    }
+  }
+}
+
+// ✅ MEJORA: Espaciado específico para el select de layoutMode
+.full-width mat-select {
+  ::ng-deep .mat-mdc-select-value {
+    line-height: 1.5;
   }
 }
 

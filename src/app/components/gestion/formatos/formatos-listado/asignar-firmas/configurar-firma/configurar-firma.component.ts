@@ -83,32 +83,118 @@ export class ConfigurarFirmaComponent implements OnInit {
   private initForm() {
     const existing = this.data.existingConfig;
 
+    // 🔧 DEBUGGING: Log para ver qué viene del backend
+    console.log('🔍 Configuración existente recibida:', existing);
+
+    // ✅ SOLUCIÓN: Función helper para convertir valores
+    const parseNumber = (value: any, defaultValue: number): number => {
+      if (value === null || value === undefined) return defaultValue;
+
+      // Si es un objeto (BigDecimal de Java serializado)
+      if (typeof value === 'object' && value !== null) {
+        // Intentar obtener el valor numérico
+        if ('value' in value) return Number(value.value) || defaultValue;
+        if ('$numberDecimal' in value) return Number(value.$numberDecimal) || defaultValue;
+      }
+
+      // Si es string o number, convertir directamente
+      const parsed = Number(value);
+      return isNaN(parsed) ? defaultValue : parsed;
+    };
+
+    const parseBoolean = (value: any, defaultValue: boolean): boolean => {
+      if (value === null || value === undefined) return defaultValue;
+      if (typeof value === 'boolean') return value;
+      return value === '1' || value === 1 || value === 'true' || value === true;
+    };
+
+    const parseString = (value: any, defaultValue: string): string => {
+      if (value === null || value === undefined) return defaultValue;
+      return String(value);
+    };
+
+    // 🔧 DEBUGGING: Log de valores parseados
+    if (existing) {
+      console.log('📊 Valores parseados:');
+      console.log('  - orden:', parseNumber(existing.orden, this.orden));
+      console.log('  - firmarDigital:', parseBoolean(existing.firmarDigital, false));
+      console.log('  - firmaVisible:', parseBoolean(existing.firmaVisible, true));
+      console.log('  - pagina:', parseNumber(existing.pagina, 1));
+      console.log('  - layoutMode:', existing.layoutMode);
+      console.log('  - posX:', parseNumber(existing.posX, 50));
+      console.log('  - posY:', parseNumber(existing.posY, 50));
+      console.log('  - ancho:', parseNumber(existing.ancho, 150));
+      console.log('  - alto:', parseNumber(existing.alto, 60));
+      console.log('  - gapX:', parseNumber(existing.gapX, 10));
+      console.log('  - gapY:', parseNumber(existing.gapY, 10));
+    }
+
     this.form = this._fb.group({
       // Configuración básica
-      orden: [existing?.orden || this.orden, [Validators.required, Validators.min(1)]],
-      firmarDigital: [existing?.firmarDigital === '1' || false],
-      firmaVisible: [existing?.firmaVisible !== '0'], // Por defecto true
+      orden: [
+        existing ? parseNumber(existing.orden, this.orden) : this.orden,
+        [Validators.required, Validators.min(1)]
+      ],
+      firmarDigital: [
+        existing ? parseBoolean(existing.firmarDigital, false) : false
+      ],
+      firmaVisible: [
+        existing ? parseBoolean(existing.firmaVisible, true) : true
+      ],
 
       // Posicionamiento
-      pagina: [existing?.pagina || 1, [Validators.required, Validators.min(1)]],
-      layoutMode: [existing?.layoutMode || 'ABS', Validators.required],
+      pagina: [
+        existing ? parseNumber(existing.pagina, 1) : 1,
+        [Validators.required, Validators.min(1)]
+      ],
+      layoutMode: [
+        existing ? parseString(existing.layoutMode, 'ABS') : 'ABS',
+        Validators.required
+      ],
 
       // Coordenadas (solo para ABS)
-      posX: [existing?.posX || 50, [Validators.min(0)]],
-      posY: [existing?.posY || 50, [Validators.min(0)]],
+      posX: [
+        existing ? parseNumber(existing.posX, 50) : 50,
+        [Validators.min(0)]
+      ],
+      posY: [
+        existing ? parseNumber(existing.posY, 50) : 50,
+        [Validators.min(0)]
+      ],
 
       // Dimensiones
-      ancho: [existing?.ancho || 150, [Validators.required, Validators.min(10)]],
-      alto: [existing?.alto || 60, [Validators.required, Validators.min(10)]],
+      ancho: [
+        existing ? parseNumber(existing.ancho, 150) : 150,
+        [Validators.required, Validators.min(10)]
+      ],
+      alto: [
+        existing ? parseNumber(existing.alto, 60) : 60,
+        [Validators.required, Validators.min(10)]
+      ],
 
       // Espaciado (para STACK/COLUMN)
-      gapX: [existing?.gapX || 10, [Validators.min(0)]],
-      gapY: [existing?.gapY || 10, [Validators.min(0)]],
+      gapX: [
+        existing ? parseNumber(existing.gapX, 10) : 10,
+        [Validators.min(0)]
+      ],
+      gapY: [
+        existing ? parseNumber(existing.gapY, 10) : 10,
+        [Validators.min(0)]
+      ],
 
       // Metadatos
-      reason: [existing?.reason || 'Certificado académico oficial', [Validators.maxLength(200)]],
-      location: [existing?.location || 'Universidad Nacional Pedro Ruiz Gallo', [Validators.maxLength(200)]]
+      reason: [
+        existing ? parseString(existing.reason, 'Certificado académico oficial') : 'Certificado académico oficial',
+        [Validators.maxLength(200)]
+      ],
+      location: [
+        existing ? parseString(existing.location, 'Universidad Nacional Pedro Ruiz Gallo') : 'Universidad Nacional Pedro Ruiz Gallo',
+        [Validators.maxLength(200)]
+      ]
     });
+
+    // 🔧 DEBUGGING: Log del formulario creado
+    console.log('📝 Formulario inicializado con valores:', this.form.value);
 
     this.updateFieldsBasedOnLayout(this.form.value.layoutMode);
   }
@@ -181,6 +267,7 @@ export class ConfigurarFirmaComponent implements OnInit {
       firmaVisible: this.form.value.firmaVisible ? '1' : '0'
     };
 
+    console.log('💾 Guardando configuración:', config);
     this._dialogRef.close({ success: true, config });
   }
 

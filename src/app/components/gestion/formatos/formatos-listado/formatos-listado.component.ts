@@ -12,6 +12,7 @@ import {MenuOption} from "~shared/classes/ActionButtonsComponent";
 import {
   AsignarFirmasComponent
 } from "app/components/gestion/formatos/formatos-listado/asignar-firmas/asignar-firmas.component";
+import {map} from "rxjs/operators";
 
 @Component({
   selector: 'app-formato-listado',
@@ -307,11 +308,11 @@ export class FormatosListadoComponent implements OnInit {
 
     // Primero obtener los IDs de las firmas ya asignadas
     this._tbFormatoCertificadoFirmaService
-      .findFirmaIdsByFormatoCertificadoId(tbFormatoCertificado.id!)
+      .findAllByIdFormatoCertificado(tbFormatoCertificado.id!)
       .subscribe({
-        next: (firmaIdsAsignadas) => {
-          console.log('Firmas ya asignadas:', firmaIdsAsignadas);
+        next: (firmasAsignadas) => {
 
+          const firmaIdsAsignadas = firmasAsignadas.map(a => a.tbFirma?.id).filter(id => id !== undefined) as number[];
           // Abrir el modal con los IDs de firmas pre-seleccionadas
           const dialogRef = this._matDialog.open(AsignarFirmasComponent, {
             width: '90vw',
@@ -319,7 +320,8 @@ export class FormatosListadoComponent implements OnInit {
             maxHeight: '90vh',
             data: {
               tbFormatoCertificado: tbFormatoCertificado,
-              firmaIdsYaAsignadas: firmaIdsAsignadas // Pasar IDs de firmas ya asignadas
+              firmaIdsYaAsignadas: firmaIdsAsignadas,
+              firmasYaAsignadas: firmasAsignadas
             },
             disableClose: true,
             panelClass: 'custom-dialog-container'
