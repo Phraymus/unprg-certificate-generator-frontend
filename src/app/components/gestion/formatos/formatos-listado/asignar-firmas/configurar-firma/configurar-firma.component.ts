@@ -113,22 +113,6 @@ export class ConfigurarFirmaComponent implements OnInit {
       return String(value);
     };
 
-    // 🔧 DEBUGGING: Log de valores parseados
-    if (existing) {
-      console.log('📊 Valores parseados:');
-      console.log('  - orden:', parseNumber(existing.orden, this.orden));
-      console.log('  - firmarDigital:', parseBoolean(existing.firmarDigital, false));
-      console.log('  - firmaVisible:', parseBoolean(existing.firmaVisible, true));
-      console.log('  - pagina:', parseNumber(existing.pagina, 1));
-      console.log('  - layoutMode:', existing.layoutMode);
-      console.log('  - posX:', parseNumber(existing.posX, 50));
-      console.log('  - posY:', parseNumber(existing.posY, 50));
-      console.log('  - ancho:', parseNumber(existing.ancho, 150));
-      console.log('  - alto:', parseNumber(existing.alto, 60));
-      console.log('  - gapX:', parseNumber(existing.gapX, 10));
-      console.log('  - gapY:', parseNumber(existing.gapY, 10));
-    }
-
     this.form = this._fb.group({
       // Configuración básica
       orden: [
@@ -139,7 +123,7 @@ export class ConfigurarFirmaComponent implements OnInit {
         existing ? parseBoolean(existing.firmarDigital, false) : false
       ],
       firmaVisible: [
-        existing ? parseBoolean(existing.firmaVisible, true) : true
+        existing ? parseBoolean(existing.firmaVisible, false) : false
       ],
 
       // Posicionamiento
@@ -239,7 +223,7 @@ export class ConfigurarFirmaComponent implements OnInit {
 
     this._tbCertificadoDigitalService.findActiveByFirmaId(this.firma.id).subscribe({
       next: (certificado) => {
-        this.tieneCertificadoDigital = !!certificado;
+        this.tieneCertificadoDigital = !!certificado.data;
         this.cargandoCertificado = false;
 
         if (!this.tieneCertificadoDigital) {
