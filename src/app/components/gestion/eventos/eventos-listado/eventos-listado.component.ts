@@ -116,14 +116,14 @@ export class EventosListadoComponent implements OnInit {
 
   menuOptions: MenuOption[] = [
     {
-      icon: 'folder',
-      label: 'Asignar formatos',
-      action: 'asignFormato',
-    },
-    {
       icon: 'visibility',
       label: 'Ver participantes',
       action: 'verParticipantes',
+    },
+    {
+      icon: 'folder',
+      label: 'Asignar formatos',
+      action: 'asignFormato',
     },
     {
       label: 'Generar enlace de registro',

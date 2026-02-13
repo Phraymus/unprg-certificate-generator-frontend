@@ -1,0 +1,154 @@
+<div class="diccionario-modal">
+  <!-- Header -->
+  <div class="modal-header">
+    <h2 mat-dialog-title class="text-white">
+      <mat-icon class="title-icon">menu_book</mat-icon>
+      Diccionario de Datos - Placeholders Disponibles
+    </h2>
+    <button mat-icon-button (click)="close()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Content -->
+  <mat-dialog-content class="modal-content">
+    <!-- Descripción -->
+    <mat-card class="info-card">
+      <mat-card-content>
+        <p class="info-text">
+          <mat-icon class="info-icon">info</mat-icon>
+          <strong>¿Cómo usar?</strong> Copia el placeholder y pégalo en tu documento Word.
+          El sistema lo reemplazará automáticamente al generar el certificado.
+        </p>
+        <p class="example-text">
+          <mat-icon class="example-icon">lightbulb</mat-icon>
+          <strong>Ejemplo:</strong> Para insertar el nombre completo, escribe en tu Word:
+          <code class="placeholder-code">sc_nombres</code> o <code class="placeholder-code">{{ '{' }}sc_nombres{{ '}' }}</code>
+        </p>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Buscador -->
+    <mat-form-field class="search-field" appearance="outline">
+      <mat-label>Buscar placeholder...</mat-label>
+      <input matInput [(ngModel)]="searchTerm" placeholder="Ej: nombre, fecha, firma...">
+      <mat-icon matPrefix>search</mat-icon>
+      <button mat-icon-button matSuffix *ngIf="searchTerm" (click)="searchTerm = ''">
+        <mat-icon>clear</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <!-- Tabs por categoría -->
+    <mat-tab-group class="categories-tabs" animationDuration="300ms">
+      <!-- Tab: Todos -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">list</mat-icon>
+          Todos ({{ filteredFields.length }})
+        </ng-template>
+
+        <div class="tab-content">
+          <div class="fields-grid">
+            <mat-card *ngFor="let field of filteredFields" class="field-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <code class="placeholder-highlight">{{ field.placeholder }}</code>
+                  <button mat-icon-button
+                          (click)="copyToClipboard(field.placeholder)"
+                          matTooltip="Copiar"
+                          class="copy-button">
+                    <mat-icon>content_copy</mat-icon>
+                  </button>
+                </mat-card-title>
+                <mat-chip class="category-chip">{{ field.categoria }}</mat-chip>
+              </mat-card-header>
+              <mat-card-content>
+                <p class="description">{{ field.description }}</p>
+                <div class="field-details">
+                  <span class="detail-label">Tipo:</span>
+                  <mat-chip class="type-chip" [ngClass]="'type-' + field.tipo.toLowerCase()">
+                    {{ field.tipo }}
+                  </mat-chip>
+                </div>
+                <div class="field-example">
+                  <span class="detail-label">Ejemplo:</span>
+                  <code class="example-code">{{ field.ejemplo }}</code>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Tab por cada categoría -->
+      <mat-tab *ngFor="let categoria of categorias">
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">{{ getCategoryIcon(categoria) }}</mat-icon>
+          {{ categoria }} ({{ getFieldsByCategory(categoria).length }})
+        </ng-template>
+
+        <div class="tab-content">
+          <div class="fields-grid">
+            <mat-card *ngFor="let field of getFieldsByCategory(categoria)" class="field-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <code class="placeholder-highlight">{{ field.placeholder }}</code>
+                  <button mat-icon-button
+                          (click)="copyToClipboard(field.placeholder)"
+                          matTooltip="Copiar"
+                          class="copy-button">
+                    <mat-icon>content_copy</mat-icon>
+                  </button>
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <p class="description">{{ field.description }}</p>
+                <div class="field-details">
+                  <span class="detail-label">Tipo:</span>
+                  <mat-chip class="type-chip" [ngClass]="'type-' + field.tipo.toLowerCase()">
+                    {{ field.tipo }}
+                  </mat-chip>
+                </div>
+                <div class="field-example">
+                  <span class="detail-label">Ejemplo:</span>
+                  <code class="example-code">{{ field.ejemplo }}</code>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+
+    <!-- Nota sobre firmas dinámicas -->
+    <mat-card class="warning-card">
+      <mat-card-content>
+        <mat-icon class="warning-icon">warning_amber</mat-icon>
+        <div class="warning-content">
+          <strong>Nota sobre firmas:</strong>
+          <p>
+            Los placeholders de firmas son dinámicos. Reemplaza <code>{{ '{' }}codigo_firma{{ '}' }}</code>
+            con el código real de la firma configurada en el sistema.
+          </p>
+          <p class="example-note">
+            <strong>Por ejemplo:</strong> Si tienes una firma con código "DIRECTOR", usa:
+            <code class="placeholder-code">director.nombre</code>,
+            <code class="placeholder-code">director.cargo</code>,
+            <code class="placeholder-code">director.imagen</code>
+          </p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </mat-dialog-content>
+
+  <!-- Footer -->
+  <mat-dialog-actions align="end" class="modal-actions">
+    <button mat-raised-button (click)="close()">
+      Cerrar
+    </button>
+    <button mat-raised-button color="primary text-white" (click)="exportarDiccionario()">
+      <mat-icon>download</mat-icon>
+      Exportar como PDF
+    </button>
+  </mat-dialog-actions>
+</div>

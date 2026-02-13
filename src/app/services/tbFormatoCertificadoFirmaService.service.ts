@@ -15,6 +15,10 @@ export class TbFormatoCertificadoFirmaService extends GenericCrudService<TbForma
     super(url, _http);
   }
 
+  findById2(idFormatoCertificado: number, idFirma ): Observable<TbFormatoCertificadoFirma> {
+    return this.http.get<ApiResponse>(`${this.url}/${idFormatoCertificado}/${idFirma}`).pipe(map((res) => res.data));
+  }
+
   findAllByIdFormatoCertificado(eventoId: number): Observable<TbFormatoCertificadoFirma[]> {
     return this.http.get<ApiResponse<TbFormatoCertificadoFirma[]>>(
       `${this.url}/findAllByIdFormatoCertificado/${eventoId}`

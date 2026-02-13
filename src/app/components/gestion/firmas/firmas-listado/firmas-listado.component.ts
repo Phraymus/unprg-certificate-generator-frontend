@@ -7,10 +7,15 @@ import { TbFirma } from "~shared/interfaces";
 import { MatDialog } from "@angular/material/dialog";
 import { FirmasRegistroComponent } from "app/components/gestion/firmas/firmas-registro/firmas-registro.component";
 import { MatSnackBar } from '@angular/material/snack-bar';
+import {MenuOption} from "~shared/classes/ActionButtonsComponent";
+import {
+  CertificadoDigitalRegistroComponent
+} from "app/components/gestion/firmas/firmas-listado/certificado-digital-registro/certificado-digital-registro.component";
 
 // Cell Renderer para mostrar imagen de firma
 class ImageCellRenderer {
   eGui!: HTMLElement;
+
 
   init(params: any) {
     this.eGui = document.createElement('div');
@@ -90,8 +95,17 @@ export class FirmasListadoComponent implements OnInit {
   private _tbFirmaService: TbFirmaService = inject(TbFirmaService);
   private _matDialog: MatDialog = inject(MatDialog);
   private _snackBar: MatSnackBar = inject(MatSnackBar);
+  private _dialog: MatDialog = inject(MatDialog);
 
   rowData: TbFirma[] = [];
+
+  menuOptions: MenuOption[] = [
+    {
+      label: 'Agregar certificado digital',
+      icon: 'folder',
+      action: "asignCertificateDigital"
+    }
+  ];
 
   colDefs: ColDef[] = [
     {
@@ -301,5 +315,21 @@ export class FirmasListadoComponent implements OnInit {
       return 'Activo';
     }
     return 'Inactivo';
+  }
+
+  handleMenuAction($event: { action: string; data: any }) {
+    if ($event.action === 'asignCertificateDigital') {
+      this.asignarCertificadoDigital($event.data);
+    }else{
+      this.showMessage(`Acción desconocida: ${$event.action}`);
+    }
+  }
+
+  private asignarCertificadoDigital(data: any) {
+    this._dialog.open(CertificadoDigitalRegistroComponent, {
+      width: '1200px',
+      maxWidth: '95vw',
+      data: { firma: data }
+    });
   }
 }
