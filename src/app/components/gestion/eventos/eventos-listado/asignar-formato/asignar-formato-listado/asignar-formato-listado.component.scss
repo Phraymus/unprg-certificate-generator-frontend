@@ -1,0 +1,427 @@
+// Estilos para el modal de asignación de firmas
+:host {
+  display: block;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+.cardWithShadow {
+  box-shadow: none;
+  border-radius: 8px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+mat-card-content {
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(90vh - 180px);
+  padding: 16px 24px;
+}
+
+mat-card-footer {
+  border-top: 1px solid #e0e0e0;
+  background-color: #fafafa;
+  flex-shrink: 0;
+}
+
+// Header
+mat-card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 16px 24px;
+  border-radius: 8px 8px 0 0;
+
+  mat-card-title {
+    color: #495057;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    .event-info {
+      font-size: 0.9rem;
+      color: #666;
+      font-weight: 400;
+      padding: 4px 12px;
+      background-color: #e3f2fd;
+      border-radius: 12px;
+      margin-left: 8px;
+    }
+  }
+}
+
+// Event details section
+.event-details-section {
+  display: flex;
+  gap: 24px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+
+  .event-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      color: #1976d2;
+    }
+
+    strong {
+      color: #333;
+    }
+
+    span {
+      color: #666;
+    }
+  }
+}
+
+// Selection info
+.selection-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: #fff3e0;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  mat-chip-set {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .selection-chip {
+    background-color: #4caf50 !important;
+    color: white !important;
+    font-weight: 500;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 32px !important;
+    padding: 0 12px !important;
+
+    mat-icon {
+      color: white !important;
+      margin-right: 6px;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      line-height: 18px;
+      vertical-align: middle;
+    }
+
+    ::ng-deep .mdc-evolution-chip__text-label {
+      color: white !important;
+    }
+  }
+
+  .total-chip {
+    background-color: #2196f3 !important;
+    color: white !important;
+    font-weight: 500;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 32px !important;
+    padding: 0 12px !important;
+
+    mat-icon {
+      color: white !important;
+      margin-right: 6px;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      line-height: 18px;
+      vertical-align: middle;
+    }
+
+    ::ng-deep .mdc-evolution-chip__text-label {
+      color: white !important;
+    }
+  }
+
+  button {
+    height: 32px;
+    font-size: 0.875rem;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      margin-right: 4px;
+    }
+  }
+}
+
+// Grid container
+.grid-container {
+  margin: 16px 0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+
+  .ag-theme-alpine {
+    border-radius: 8px;
+  }
+}
+
+// Selected firmas section
+.selected-firmas-section {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  border: 2px dashed #ccc;
+
+  .section-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #333;
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    mat-icon {
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
+      color: #4caf50;
+    }
+  }
+
+  .selected-firmas-list {
+    mat-chip-set {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    mat-chip {
+      padding: 8px 12px;
+      background-color: white !important;
+      border: 1px solid #ddd;
+      max-width: 100%;
+
+      .firma-chip-content {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        max-width: 100%;
+
+        .firma-chip-image {
+          max-height: 30px;
+          max-width: 60px;
+          object-fit: contain;
+          border: 1px solid #ddd;
+          border-radius: 3px;
+          background-color: white;
+        }
+
+        .firma-chip-text {
+          font-size: 0.875rem;
+          color: #333;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+
+      mat-icon[matChipRemove] {
+        color: #d32f2f;
+        cursor: pointer;
+        margin-left: 8px;
+
+        &:hover {
+          color: #b71c1c;
+        }
+      }
+    }
+  }
+}
+
+// Footer
+.footer-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+  font-size: 0.875rem;
+
+  .info-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #1976d2;
+  }
+}
+
+// Badge count en botón
+.badge-count {
+  background-color: rgba(255, 255, 255, 0.3);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-left: 8px;
+}
+
+// Botones
+button {
+  &.mat-mdc-raised-button,
+  &.mat-mdc-outlined-button {
+    min-width: 100px;
+    height: 40px;
+
+    mat-icon {
+      margin-right: 8px;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+// Animación para el icono de carga
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// AG-Grid customizations
+::ng-deep {
+  .ag-theme-alpine {
+    .ag-header-cell-label {
+      justify-content: center;
+    }
+
+    .ag-cell {
+      display: flex;
+      align-items: center;
+    }
+
+    .ag-checkbox-input-wrapper {
+      font-size: 16px;
+    }
+
+    // Estilos para filas seleccionadas
+    .ag-row-selected {
+      background-color: #e3f2fd !important;
+
+      &:hover {
+        background-color: #bbdefb !important;
+      }
+    }
+
+    // Floating filter
+    .ag-floating-filter-input {
+      font-size: 13px;
+    }
+  }
+
+  // Forzar color blanco en los chips
+  .selection-chip,
+  .total-chip {
+    color: white !important;
+
+    .mat-mdc-chip-action-label,
+    .mdc-evolution-chip__text-label {
+      color: white !important;
+    }
+
+    mat-icon {
+      color: white !important;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  mat-card-content {
+    padding: 12px 16px;
+  }
+
+  .event-details-section {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .selection-info {
+    flex-direction: column;
+    align-items: stretch;
+
+    mat-chip-set {
+      justify-content: center;
+    }
+
+    button {
+      width: 100%;
+      margin: 0 !important;
+    }
+  }
+
+  .selected-firmas-section {
+    .selected-firmas-list {
+      mat-chip {
+        max-width: 100%;
+
+        .firma-chip-content {
+          .firma-chip-text {
+            max-width: 150px;
+          }
+        }
+      }
+    }
+  }
+
+  mat-card-footer {
+    .d-flex {
+      flex-direction: column;
+      gap: 12px;
+
+      .footer-info {
+        justify-content: center;
+        text-align: center;
+      }
+
+      .gap-2 {
+        width: 100%;
+
+        button {
+          width: 100%;
+          margin: 0 !important;
+        }
+      }
+    }
+  }
+}
+
+// Utilidades
+.m-b-0 { margin-bottom: 0 !important; }
+.b-t-1 { border-top: 1px solid #dee2e6; }
+.me-2 { margin-right: 8px !important; }
+.ms-2 { margin-left: 8px !important; }
+.p-3 { padding: 16px !important; }
+.d-flex { display: flex; }
+.justify-content-between { justify-content: space-between; }
+.justify-content-end { justify-content: flex-end; }
+.align-items-center { align-items: center; }
+.gap-2 { gap: 8px; }

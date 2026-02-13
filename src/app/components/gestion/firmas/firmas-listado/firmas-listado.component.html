@@ -16,6 +16,7 @@
       [columnDefs]="colDefs"
       [showActions]="true"
       [showAddButton]="true"
+      [menuOptions]="menuOptions"
       addButtonText="Agregar Firma"
       addButtonClass="m-r-8 bg-primary"
       searchPlaceholder="Buscar..."
@@ -27,7 +28,8 @@
       (onEdit)="onEdit($event)"
       (onView)="onView($event)"
       (onDelete)="onDelete($event)"
-      (gridReady)="onGridReady($event)">
+      (gridReady)="onGridReady($event)"
+      (onMenuAction)="handleMenuAction($event)">
     </app-ag-grid-angular-custom>
   </mat-card-content>
 </mat-card>

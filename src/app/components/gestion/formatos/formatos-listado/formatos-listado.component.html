@@ -24,6 +24,7 @@
       gridHeight="60vh"
       [paginationPageSize]="20"
       [rowHeight]="50"
+      [customActionsTemplate]="accionesTpl"
       (onAdd)="onAdd()"
       (onEdit)="onEdit($event)"
       (onView)="onView($event)"
@@ -34,6 +35,11 @@
     >
     </app-ag-grid-angular-custom>
 
+    <ng-template #accionesTpl let-ctx>
+      <button mat-stroked-button type="button" (click)="loadDiccionarioDatos(ctx)">
+        Ver diccionario de datos
+      </button>
+    </ng-template>
 
     <!--    &lt;!&ndash; Botón adicional para exportar &ndash;&gt;-->
 <!--    <div class="d-flex justify-content-end mt-3">-->

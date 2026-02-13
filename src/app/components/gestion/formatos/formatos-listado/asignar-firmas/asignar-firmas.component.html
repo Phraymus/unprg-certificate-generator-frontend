@@ -7,8 +7,8 @@
         data-inline="false"
         style="font-size: 28px;">
       </span>
-      Asignar Firmas al Evento
-      <span class="event-info">{{ evento?.nombre }}</span>
+      Asignar Firmas al Formato
+      <span class="event-info">{{ tbFormatoCertificado?.nombreFormato }}</span>
     </mat-card-title>
   </mat-card-header>
 
@@ -17,11 +17,11 @@
     <div class="event-details-section">
       <div class="event-detail-item">
         <mat-icon>event</mat-icon>
-        <span><strong>Código:</strong> {{ evento?.codigo }}</span>
+        <span><strong>Código:</strong> {{ tbFormatoCertificado?.codigo }}</span>
       </div>
       <div class="event-detail-item">
-        <mat-icon>calendar_today</mat-icon>
-        <span><strong>Fechas:</strong> {{ formatDate(evento?.fechaInicio) }} - {{ formatDate(evento?.fechaFin) }}</span>
+        <mat-icon>description</mat-icon>
+        <span><strong>Nombre:</strong> {{ tbFormatoCertificado?.nombreFormato }}</span>
       </div>
     </div>
 

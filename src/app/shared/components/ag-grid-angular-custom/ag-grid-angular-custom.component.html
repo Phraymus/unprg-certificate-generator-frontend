@@ -8,7 +8,18 @@
       class="form-control form-control-sm">
   </div>
 
-  <div class="col-sm-12 col-md-6 mt-3 text-end" *ngIf="showAddButton">
+  <div
+    class="col-sm-12 col-md-6 mt-3 d-flex justify-content-end align-items-center gap-6 px-1"
+    *ngIf="showAddButton"
+  >
+    <!-- Botones personalizados -->
+    <ng-container *ngIf="customActionsTemplate">
+      <ng-container
+        *ngTemplateOutlet="customActionsTemplate; context: customActionsContext">
+      </ng-container>
+    </ng-container>
+
+    <!-- Botón agregar -->
     <button
       mat-flat-button
       #agregar

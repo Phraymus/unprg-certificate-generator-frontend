@@ -2,13 +2,18 @@ import {Component, inject, OnInit} from '@angular/core';
 import {AgGridAngularCustomComponent} from "~shared/components/ag-grid-angular-custom/ag-grid-angular-custom.component";
 import {MatCard, MatCardContent, MatCardHeader, MatCardTitle} from "@angular/material/card";
 import {ColDef} from "ag-grid-community";
-import {TbFormatoCertificadoService} from "app/services";
+import {TbFormatoCertificadoFirmaService, TbFormatoCertificadoService} from "app/services";
 import {TbFormatoCertificado} from "~shared/interfaces";
 import {MatDialog} from "@angular/material/dialog";
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {FormatosRegistroComponent} from "app/components/gestion/formatos/formatos-registro/formatos-registro.component";
-import {MatIcon} from "@angular/material/icon";
 import {MenuOption} from "~shared/classes/ActionButtonsComponent";
+import {
+  AsignarFirmasComponent
+} from "app/components/gestion/formatos/formatos-listado/asignar-firmas/asignar-firmas.component";
+import {MatButton} from "@angular/material/button";
+// ✅ IMPORTAR EL NUEVO COMPONENTE DEL MODAL
+import {DiccionarioDatosModalComponent} from "./diccionario-datos-modal/diccionario-datos-modal.component";
 
 @Component({
   selector: 'app-formato-listado',
@@ -18,12 +23,14 @@ import {MenuOption} from "~shared/classes/ActionButtonsComponent";
     MatCardContent,
     MatCardHeader,
     MatCardTitle,
+    MatButton,
   ],
   templateUrl: './formatos-listado.component.html',
   styleUrl: './formatos-listado.component.scss'
 })
 export class FormatosListadoComponent implements OnInit {
   private _tbFormatoCertificadoService: TbFormatoCertificadoService = inject(TbFormatoCertificadoService);
+  private _tbFormatoCertificadoFirmaService: TbFormatoCertificadoFirmaService = inject(TbFormatoCertificadoFirmaService);
   private _matDialog: MatDialog = inject(MatDialog);
   private _snackBar: MatSnackBar = inject(MatSnackBar);
 
@@ -49,33 +56,15 @@ export class FormatosListadoComponent implements OnInit {
       headerName: "Creado por",
       width: 130
     },
-    // {
-    //   field: "fechaCreacion",
-    //   headerName: "Fecha Creación",
-    //   width: 140,
-    //   valueFormatter: (params) => {
-    //     if (params.value) {
-    //       return new Date(params.value).toLocaleDateString();
-    //     }
-    //     return '';
-    //   }
-    // },
-    // {
-    //   field: "tamanoArchivo",
-    //   headerName: "Tamaño",
-    //   width: 100,
-    //   valueFormatter: (params) => {
-    //     if (params.value) {
-    //       return this.formatFileSize(params.value);
-    //     }
-    //     return '';
-    //   }
-    // }
   ];
 
   menuOptions: MenuOption[] = [
-    {label: 'Descargar plantilla', icon: 'download', action: "downloadTemplate"},
-    {label: 'Ver diccionario de datos', icon: 'book', action: "dataDictionary"},
+    {
+      label: 'Asignar firmas',
+      icon: 'edit',
+      action: "asignSignatures"
+    },
+    {label: 'Descargar formato', icon: 'download', action: "downloadTemplate"},
   ];
 
   ngOnInit(): void {
@@ -197,7 +186,6 @@ export class FormatosListadoComponent implements OnInit {
         const link = document.createElement('a');
         link.href = url;
 
-        // Obtener nombre del archivo de la ruta o usar un nombre por defecto
         const fileName = rowData.rutaFormato?.split('/').pop() || `formato_${rowData.codigo}.docx`;
         link.download = fileName;
 
@@ -285,11 +273,84 @@ export class FormatosListadoComponent implements OnInit {
         this.onDownload($event.data);
         break;
       case 'asignSignatures':
-        // Aquí puedes implementar la lógica para asignar firmas
-        this.showMessage('Funcionalidad de asignar firmas no implementada aún', 'info');
+        this.asignarFirmas($event.data);
         break;
       default:
         console.warn('Acción de menú no reconocida:', $event.action);
     }
+  }
+
+  asignarFirmas(tbFormatoCertificado: TbFormatoCertificado) {
+    this.showMessage('Cargando firmas asignadas...', 'info');
+
+    this._tbFormatoCertificadoFirmaService
+      .findAllByIdFormatoCertificado(tbFormatoCertificado.id!)
+      .subscribe({
+        next: (firmasAsignadas) => {
+
+          const firmaIdsAsignadas = firmasAsignadas.map(a => a.tbFirma?.id).filter(id => id !== undefined) as number[];
+
+          const dialogRef = this._matDialog.open(AsignarFirmasComponent, {
+            width: '90vw',
+            maxWidth: '1200px',
+            maxHeight: '90vh',
+            data: {
+              tbFormatoCertificado: tbFormatoCertificado,
+              firmaIdsYaAsignadas: firmaIdsAsignadas,
+              firmasYaAsignadas: firmasAsignadas
+            },
+            disableClose: true,
+            panelClass: 'custom-dialog-container'
+          });
+
+          dialogRef.afterClosed().subscribe(result => {
+            if (result?.success) {
+              const count = result.count || 0;
+              this.showMessage(`${count} firma(s) asignada(s) al formato exitosamente`, 'success');
+            }
+          });
+        },
+        error: (error) => {
+          console.error('Error al cargar firmas asignadas:', error);
+
+          const dialogRef = this._matDialog.open(AsignarFirmasComponent, {
+            width: '90vw',
+            maxWidth: '1200px',
+            maxHeight: '90vh',
+            data: {
+              evento: tbFormatoCertificado,
+              firmaIdsYaAsignadas: []
+            },
+            disableClose: true,
+            panelClass: 'custom-dialog-container'
+          });
+
+          dialogRef.afterClosed().subscribe(result => {
+            if (result?.success) {
+              const count = result.count || 0;
+              this.showMessage(`${count} firma(s) asignada(s) al formato exitosamente`, 'success');
+            }
+          });
+        }
+      });
+  }
+
+  loadDiccionarioDatos(ctx: any) {
+    const dialogRef = this._matDialog.open(DiccionarioDatosModalComponent, {
+      width: '95vw',
+      maxWidth: '1400px',
+      height: '90vh',
+      maxHeight: '900px',
+      data: {
+        formato: ctx
+      },
+      panelClass: 'diccionario-modal-container'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log('Modal de diccionario cerrado:', result);
+      }
+    });
   }
 }

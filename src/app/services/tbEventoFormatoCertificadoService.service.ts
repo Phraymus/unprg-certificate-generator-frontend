@@ -15,7 +15,7 @@ export class TbEventoFormatoCertificadoService extends GenericCrudService<TbEven
     super(url, _http);
   }
 
-  findByEventoId(eventoId: number): Observable<TbEventoFormatoCertificado> {
+  findByEventoId(eventoId: number): Observable<TbEventoFormatoCertificado[]> {
     return this.http.get<ApiResponse>(`${this.url}/findByEventoId/${eventoId}`)
       .pipe(map((res) => res.data));
   }

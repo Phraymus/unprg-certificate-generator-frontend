@@ -1,10 +1,10 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
+import {Component, Input, Output, EventEmitter, ViewChild, ElementRef, TemplateRef} from '@angular/core';
 import { ColDef, GridApi, GridOptions } from 'ag-grid-community';
 import { AgGridAngular } from 'ag-grid-angular';
 import { MatButton } from '@angular/material/button';
 import { AG_GRID_LOCALE_ES } from '@ag-grid-community/locale';
 import { ActionButtonsComponent, MenuOption } from "~shared/classes/ActionButtonsComponent";
-import { NgIf } from "@angular/common";
+import {NgIf, NgTemplateOutlet} from "@angular/common";
 
 @Component({
   selector: 'app-ag-grid-angular-custom',
@@ -12,6 +12,7 @@ import { NgIf } from "@angular/common";
     AgGridAngular,
     MatButton,
     NgIf,
+    NgTemplateOutlet
   ],
   templateUrl: './ag-grid-angular-custom.component.html',
   styleUrl: './ag-grid-angular-custom.component.scss'
@@ -47,6 +48,16 @@ export class AgGridAngularCustomComponent {
   @Output() onDelete = new EventEmitter<any>();
   @Output() onMenuAction = new EventEmitter<{action: string, data: any}>();
   @Output() gridReady = new EventEmitter<any>();
+
+
+  // Slot para acciones personalizadas entre buscador y botón Agregar
+  @Input() customActionsTemplate?: TemplateRef<any>;
+
+  // Contexto que recibirá el ng-template del padre
+  customActionsContext = {
+    grid: this,
+    getApi: () => this.gridApi
+  };
 
   gridApi: GridApi;
   internalColDefs: ColDef[] = [];
@@ -141,6 +152,11 @@ export class AgGridAngularCustomComponent {
 
   onGridReady(event: any) {
     this.gridApi = event.api;
+    // refresca el context (por si el template quiere usar api)
+    this.customActionsContext = {
+      grid: this,
+      getApi: () => this.gridApi
+    };
     this.gridReady.emit(event);
   }
 

@@ -1,12 +1,14 @@
 export { TbCertificado } from './TbCertificado.interface';
 export { TbEvento } from './TbEvento.interface';
 export { TbEventoFormatoCertificado } from './TbEventoFormatoCertificado.interface';
-export { TbEventoFormatoCertificadoFirma } from './TbEventoFormatoCertificadoFirma.interface';
-export { TbEventoFormatoCertificadoFirmaId } from './TbEventoFormatoCertificadoFirmaId.interface';
+export { TbFormatoCertificadoFirma } from './TbFormatoCertificadoFirma.interface';
+export { TbFormatoCertificadoFirmaId } from './TbFormatoCertificadoFirmaId.interface';
 export { TbFirma } from './TbFirma.interface';
 export { TbFormatoCertificado } from './TbFormatoCertificado.interface';
 export { TbParticipante } from './TbParticipante.interface';
 export { TbParticipanteId } from './TbParticipanteId.interface';
 export { TbPersona } from './TbPersona.interface';
 export { TbUsuario } from './TbUsuario.interface';
+export { TbTipoParticipante } from './TbTipoParticipante.interface';
+export { TbEventoFormatoCertificadoId } from './TbEventoFormatoCertificadoId';
 export { ApiResponse } from './ApiResponse';

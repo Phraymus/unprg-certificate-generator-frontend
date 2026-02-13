@@ -1,6 +1,7 @@
 import { TbParticipanteId } from './TbParticipanteId.interface';
 import { TbEvento } from './TbEvento.interface';
 import { TbPersona } from './TbPersona.interface';
+import { TbTipoParticipante } from './TbTipoParticipante.interface';
 
 export interface TbParticipante {
   id?: TbParticipanteId;
@@ -9,4 +10,6 @@ export interface TbParticipante {
   estado?: string;
   fechaInscripcion?: string;
   nota?: number; // BigDecimal se mapea a number en TypeScript
+  comprobante? : number[] | ArrayBuffer | string | null;
+  tbTipoParticipante?: TbTipoParticipante;
 }

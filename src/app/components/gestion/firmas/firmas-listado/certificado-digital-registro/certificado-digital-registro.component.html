@@ -1,0 +1,177 @@
+<mat-card class="cardWithShadow theme-card">
+  <mat-card-header>
+    <mat-card-title class="m-b-0">
+      <mat-icon class="me-2">verified_user</mat-icon>
+      Certificado Digital
+      <span class="ms-2" style="font-size: 0.875em;">
+        ({{ data?.firma?.codigo || data?.firma?.nombre || 'Firma' }})
+      </span>
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content class="b-t-1">
+    <!-- Información del certificado activo -->
+    <div class="mb-4" *ngIf="activo">
+      <div class="active-box">
+        <div class="d-flex align-items-center gap-2">
+          <mat-icon color="primary">check_circle</mat-icon>
+          <strong>Certificado Activo:</strong>
+          <span>{{ displayCertName(activo, 'ID ') }}</span>
+        </div>
+        <div class="small mt-1 text-muted">
+          <mat-icon class="small-icon">calendar_today</mat-icon>
+          Válido: {{ displayDesde(activo) }} → {{ displayHasta(activo) }}
+        </div>
+        <div class="small mt-1 text-muted" *ngIf="displaySerial(activo) !== '-'">
+          <mat-icon class="small-icon">fingerprint</mat-icon>
+          Serial: {{ displaySerial(activo) }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Información importante -->
+    <div class="info-banner mb-4">
+      <mat-icon>info</mat-icon>
+      <div>
+        <strong>Nota:</strong> Al registrar un nuevo certificado, este se activará automáticamente
+        y los certificados anteriores se desactivarán.
+      </div>
+    </div>
+
+    <!-- Formulario de registro -->
+    <form [formGroup]="form" class="row g-3">
+      <div class="col-12">
+        <h4 class="mb-3">
+          <mat-icon>upload</mat-icon>
+          Registrar Nuevo Certificado
+        </h4>
+      </div>
+
+      <div class="col-md-6">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Contraseña del certificado</mat-label>
+          <input matInput type="password" formControlName="password" required />
+          <mat-icon matPrefix>lock</mat-icon>
+          <mat-hint>Ingresa la contraseña del archivo .p12/.pfx</mat-hint>
+          <mat-error *ngIf="f['password'].touched && f['password'].errors">
+            La contraseña es requerida (mínimo 2 caracteres)
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="col-md-6">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Alias (opcional)</mat-label>
+          <input matInput formControlName="aliasCert" placeholder="Dejar vacío para auto-detectar" />
+          <mat-icon matPrefix>badge</mat-icon>
+          <mat-hint>Deja vacío si no conoces el alias específico</mat-hint>
+        </mat-form-field>
+      </div>
+
+      <div class="col-12">
+        <div class="file-upload-box">
+          <input
+            type="file"
+            #fileInput
+            style="display:none"
+            (change)="onFileSelected($event)"
+            accept=".p12,.pfx,application/x-pkcs12,application/octet-stream"
+          />
+
+          <button
+            mat-stroked-button
+            type="button"
+            (click)="fileInput.click()"
+            class="upload-button"
+            [disabled]="isLoading">
+            <mat-icon>upload_file</mat-icon>
+            Seleccionar archivo .p12 o .pfx
+          </button>
+
+          <div class="file-info mt-2" *ngIf="selectedFileName">
+            <mat-icon class="text-success">check_circle</mat-icon>
+            <span>Archivo seleccionado: <strong>{{ selectedFileName }}</strong></span>
+          </div>
+
+          <div class="file-hint mt-2" *ngIf="!selectedFileName">
+            <mat-icon class="small-icon">help_outline</mat-icon>
+            <span>Selecciona un certificado digital en formato .p12 o .pfx (máx. 10MB)</span>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <hr class="my-4" />
+
+    <!-- Historial de certificados -->
+    <div class="historial-section">
+      <h4 class="mb-3">
+        <mat-icon>history</mat-icon>
+        Historial de Certificados
+      </h4>
+
+      <div *ngIf="certificados?.length === 0" class="empty-state">
+        <mat-icon>folder_open</mat-icon>
+        <p>No hay certificados registrados para esta firma.</p>
+      </div>
+
+      <div class="cert-list" *ngIf="certificados?.length > 0">
+        <div class="cert-item" *ngFor="let c of certificados; let i = index">
+          <div class="cert-header">
+            <div class="cert-number">#{{ i + 1 }}</div>
+            <span
+              class="badge"
+              [class.badge-active]="isActivo(c)"
+              [class.badge-inactive]="!isActivo(c)">
+              {{ isActivo(c) ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+
+          <div class="cert-details">
+            <div class="cert-name">
+              <mat-icon>verified_user</mat-icon>
+              <strong>{{ displayCertName(c, 'Certificado #') }}</strong>
+            </div>
+
+            <div class="cert-info-grid">
+              <div class="info-item" *ngIf="displaySerial(c) !== '-'">
+                <span class="info-label">Serial:</span>
+                <span class="info-value">{{ displaySerial(c) }}</span>
+              </div>
+
+              <div class="info-item">
+                <span class="info-label">Válido desde:</span>
+                <span class="info-value">{{ displayDesde(c) }}</span>
+              </div>
+
+              <div class="info-item">
+                <span class="info-label">Válido hasta:</span>
+                <span class="info-value">{{ displayHasta(c) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </mat-card-content>
+
+  <mat-card-footer class="p-3">
+    <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+      <button mat-stroked-button type="button" class="me-2" (click)="cerrar()" [disabled]="isLoading">
+        <mat-icon>close</mat-icon>
+        Cerrar
+      </button>
+
+      <button
+        mat-flat-button
+        color="primary"
+        type="button"
+        (click)="upload()"
+        [disabled]="isLoading || form.invalid || !selectedFile">
+        <mat-icon *ngIf="!isLoading">save</mat-icon>
+        <mat-icon *ngIf="isLoading" class="spinning">sync</mat-icon>
+        {{ isLoading ? 'Procesando...' : 'Registrar Certificado' }}
+      </button>
+    </div>
+  </mat-card-footer>
+</mat-card>

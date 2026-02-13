@@ -92,44 +92,6 @@
         </div>
       </div>
 
-      <!-- Sección: Formato de Certificado -->
-      <div class="section-header mt-4">
-        <h3 class="section-title">
-          <mat-icon>description</mat-icon>
-          Formato de Certificado
-        </h3>
-      </div>
-
-      <div class="row">
-        <div class="col-md-8">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Seleccionar Formato</mat-label>
-            <mat-select formControlName="formatoCertificado" [disabled]="isReadOnlyMode">
-              <mat-option value="">-- Sin formato asignado --</mat-option>
-              <mat-option *ngFor="let formato of formatosDisponibles" [value]="formato.id">
-                {{ formato.nombreFormato }} ({{ formato.codigo }})
-              </mat-option>
-            </mat-select>
-            <mat-hint>Seleccione el formato de certificado que se utilizará para este evento</mat-hint>
-            <mat-error *ngIf="f['formatoCertificado'].touched && f['formatoCertificado'].errors && !isReadOnlyMode">
-              {{ getErrorMessage('formatoCertificado') }}
-            </mat-error>
-          </mat-form-field>
-        </div>
-
-        <div class="col-md-4" *ngIf="f['formatoCertificado'].value">
-          <div class="formato-info">
-            <div class="info-card">
-              <mat-icon class="info-icon">check_circle</mat-icon>
-              <div class="info-content">
-                <span class="info-label">Formato seleccionado:</span>
-                <span class="info-value">{{ getFormatoSeleccionadoNombre() }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div class="row" *ngIf="f['formatoCertificado'].value">
         <div class="col-md-12">
           <mat-form-field appearance="outline" class="w-100">

@@ -28,6 +28,7 @@
       gridHeight="50vh"
       [paginationPageSize]="20"
       [rowHeight]="50"
+      [customActionsTemplate]="accionesTpl"
       (onAdd)="onAdd()"
       (onEdit)="onEdit($event)"
       (onView)="onView($event)"
@@ -37,6 +38,12 @@
       (onMenuAction)="onMenuAction($event)"
     >
     </app-ag-grid-angular-custom>
+
+    <ng-template #accionesTpl let-ctx>
+      <button mat-stroked-button type="button" (click)="exportar(ctx)">
+        Exportar Zip
+      </button>
+    </ng-template>
   </mat-card-content>
 
   <mat-card-footer class="p-3">
